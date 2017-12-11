@@ -1,8 +1,16 @@
+# Decisions to keep in mind
+# 1. Subset the rows corresponding to only relevant items
+# 2. do comparisons pairwise (as opposed to 3 at a time,etc)
+#    not sure if there would be much time gain by doing 3,
+#    and it appears as if the results are nearly identical
+# 3. 
+
+
+
 # Decisions to be made
 # Nlme vs LME?
-# fill in matrices, two at a time, or three at a time?
-# remove irrelevant rows when not in use?
 # play around with different optimizers
+# REML vs ML
 
 
 
@@ -11,6 +19,7 @@ library('lme4')
 library("reshape2")
 library('dummies')
 library('dplyr')
+library('magrittr')
 
 # ------------------------------------------------------------------------------
 # Process Data
@@ -22,11 +31,137 @@ long <- melt(myData, id.vars = c("id", "cluster"), variable.name = "item")
 # dummy code the indicators
 for (level in unique(long$item)) {
   long[paste("dummy", level, sep = "_")] <- ifelse(long$item == level, 1, 0)
+  long[level] <- ifelse(long$item == level, 1, 0)
 }
 # ------------------------------------------------------------------------------
 
+
+# use longDF, allIndicators, fitWith (nlme, lmer), 
+# return a list of two matrices (within and between)
+goldstein <- function(longDF, 
+                      outcome,
+                      fitWith,
+                      allIndicators) {
+  # Program some checks, like is longDF a DF, fitWith =nlme or lmer, 
+  # all indicators is charater, etc.
+  
+  # we need to fit these piecewise
+  # So first save all the combinations
+  combinations <- t(combn(allIndicators, m=2))
+  # create a list to save all results
+  allModels <- list()
+  # choose the estimator to use
+  if (fitWith == tolower('nlme')) {
+    # for each combination subset, fit, save model
+    for (i in seq(nrow(combinations))) {
+      # save the formula objects to be used
+      form <- paste(combinations[i,1], combinations[i,2], sep = "+")
+      model <- as.formula(paste0(outcome,"~ -1 +", form))
+      ranef <- as.formula(paste("~ -1 + ", form, "|cluster/id"))
+      # fit the model
+      # try to speed up with dplyr?
+      # need to use a try catch for models that do not converge.
+      subset <- filter(.data = longDF, item %in% combinations[i,])
+      allModels[[i]] <- lme(fixed = model, 
+                          random = ranef, 
+                          data=subset, 
+                          method = "ML",
+                          control = lmeControl(opt='optim'))
+    }
+  }
+  return(allModels)
+}
+
+indicators = c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
+
+temp <- goldstein(longDF = long,
+                  outcome = "value",
+                  fitWith = 'nlme', 
+                  allIndicators = indicators)
+VarCorr(temp[[4]])
+temp[4]
+
+i=4
+
+
+
+
+
+longDF %>% filter()
+
+longDF <- long
+i=1
+outcome = "value"
+allIndicators = c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
+
+
+fit1 <- lme (value~-1+dummy_y1+dummy_y2, random =~ -1+dummy_y1+dummy_y2|cluster/id, data=long, method = "ML")
+
+
+
+
+temp <- "value~-1+dummy_y1+dummy_y2"
+temp_form <- as.formula(temp)
+ranef <- as.formula("~-1+dummy_y1+dummy_y2|cluster/id")
+fit1 <- lme (temp_form, random = ranef, data=long_sub1, method = "ML")
+?lme()
+
 namesOfIndicators <- c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
 combinations <- t(combn(namesOfIndicators, m=2))
+
+lme(fixed = )
+
+# choosing to subset of not the data
+indicators_subset1 <- c("y1", "y2")
+indicators_subset2 <- c("y1", "y3")
+indicators_subset3 <- c("y2", "y3")
+indicators_subset4 <- c("y1", "y2", "y3")
+# filter the data
+long_sub1 <- filter(long, item %in% indicators_subset1)
+long_sub2 <- filter(long, item %in% indicators_subset2)
+long_sub3 <- filter(long, item %in% indicators_subset3)
+long_sub4 <- filter(long, item %in% indicators_subset4)
+# fit with all data
+fit1 <- lme (value~-1+dummy_y1+dummy_y2, random =~ -1+dummy_y1+dummy_y2|cluster/id, data=long, method = "ML")
+# fit with subset data
+fit2 <- lme (value~-1+dummy_y1+dummy_y2, random =~ -1+dummy_y1+dummy_y2|cluster/id, data=long_sub, method = "ML" )
+# check results
+summary(fit1)
+summary(fit2)
+
+
+#checking consistency
+ctrl <- lmeControl(opt='optim')
+fit1 <- lme (value~-1+dummy_y1+dummy_y2, 
+             random =~ -1+dummy_y1+dummy_y2|cluster/id, 
+             data=long_sub1, 
+             method = "ML",
+             control = ctrl)
+fit2 <- lme (value~-1+dummy_y1+dummy_y3, 
+             random =~ -1+dummy_y1+dummy_y3|cluster/id, 
+             data=long_sub2, 
+             method = "ML",
+             control = ctrl)
+fit3 <- lme (value~-1+dummy_y2+dummy_y3, 
+             random =~ -1+dummy_y2+dummy_y3|cluster/id, 
+             data=long_sub3, 
+             method = "ML",
+             control = ctrl)
+fit4 <- lme (value~-1+dummy_y1+dummy_y2+dummy_y3, 
+             random =~ -1+dummy_y1+dummy_y2+dummy_y3|cluster/id, 
+             data=long_sub4, 
+             method = "ML",
+             control = ctrl)
+
+summary(fit1)
+VarCorr(fit1)
+summary(fit2)
+VarCorr(fit2)
+summary(fit3)
+VarCorr(fit3)
+
+VarCorr(fit4)
+
 
 
 # fitting with different numbers of indicators 
