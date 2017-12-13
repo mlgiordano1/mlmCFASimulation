@@ -16,9 +16,9 @@
 
 library('nlme')
 library('lme4')
-library("reshape2")
-library('dummies')
-library('dplyr')
+#library("reshape2")
+#library('dummies')
+#library('dplyr')
 library('magrittr')
 
 # ------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ myData <- read.table(file = "C:/users/mgiordan/git/mlmcfasimulation/temp/tempdat
 names(myData) <- c(paste0("y", 1:9), "cluster")
 myData$id <- 1:nrow(myData)
 # make data long
-long <- melt(myData, id.vars = c("id", "cluster"), variable.name = "item")
+long <- reshape2::melt(myData, id.vars = c("id", "cluster"), variable.name = "item")
 # dummy code the indicators
 for (level in unique(long$item)) {
   long[paste("dummy", level, sep = "_")] <- ifelse(long$item == level, 1, 0)
@@ -35,6 +35,12 @@ for (level in unique(long$item)) {
 }
 # ------------------------------------------------------------------------------
 
+
+
+longDF <- long
+i=1
+outcome = "value"
+allIndicators = c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
 
 # use longDF, allIndicators, fitWith (nlme, lmer), 
 # return a list of two matrices (within and between)
@@ -51,48 +57,86 @@ goldstein <- function(longDF,
   # create a list to save all results
   allModels <- list()
   # choose the estimator to use
-  if (fitWith == tolower('nlme')) {
+  if (tolower(fitWith) == 'nlme') {
+    print("fitting with NLME")
     # for each combination subset, fit, save model
     for (i in seq(nrow(combinations))) {
       # save the formula objects to be used
       form <- paste(combinations[i,1], combinations[i,2], sep = "+")
       model <- as.formula(paste0(outcome,"~ -1 +", form))
-      ranef <- as.formula(paste("~ -1 + ", form, "|cluster/id"))
+      ranef <- as.formula(paste("~-1 + ", form, "|cluster/id"))
       # fit the model
       # try to speed up with dplyr?
       # need to use a try catch for models that do not converge.
-      subset <- filter(.data = longDF, item %in% combinations[i,])
-      allModels[[i]] <- lme(fixed = model, 
-                          random = ranef, 
-                          data=subset, 
-                          method = "ML",
-                          control = lmeControl(opt='optim'))
+      subset <- dplyr::filter(.data = longDF, item %in% combinations[i,])
+      # Try catch incase models do not converge
+       tryCatch({
+          print(i)
+          allModels[[i]] <- nlme::lme(fixed   = model, 
+                                random  = ranef, 
+                                data    = subset, 
+                                method  = "REML",
+                                control = lmeControl(opt='optim'))
+
+        }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+      # fill in the matrices
     }
+  } else if (tolower(fitWith) == 'lme4') {
+    print("fitting with lme4")
+      # for each combination subset, fit, save model
+      for (i in seq(nrow(combinations))) {
+        # save the formula objects to be used
+        form <- paste(combinations[i,1], combinations[i,2], sep = "+")
+        model <- as.formula(paste0(outcome,"~0+", form, "+(0+", form, "|cluster/id)"))
+        #ranef <- as.formula(paste("~ -1 + ", form, "|cluster/id"))
+        # fit the model
+        # try to speed up with dplyr?
+        # need to use a try catch for models that do not converge.
+        dat <- dplyr::filter(longDF, item %in% combinations[i,])
+        # subset just the items
+        # Try catch incase models do not converge
+        tryCatch({
+            print(i)
+            allModels[[i]] <- lme4::lmer(model, 
+                                         data      = dat, 
+                                         REML      = TRUE)
+        }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+        # fill in the matrices
+      }
   }
   return(allModels)
 }
 
 indicators = c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
 
+startTime <- proc.time()
 temp <- goldstein(longDF = long,
                   outcome = "value",
                   fitWith = 'nlme', 
                   allIndicators = indicators)
-VarCorr(temp[[4]])
-temp[4]
+endTime <- proc.time()
+endTime-startTime
 
-i=4
+# 86400 seconds in a day
+86400/100 #number of reps we could do in a day
+25000/(864)
 
-
-
+# ----------------------------------------------------
+# ----------------------------------------------------
+# ----------------------------------------------------
+# ----------------------------------------------------
+# ----------------------------------------------------
+# ----------------------------------------------------
+form <- paste("y1", "y2", sep = "+")
+model <- as.formula(paste0("value","~0+", form, "+(0+", form, "|cluster/id)"))
+dat <- dplyr::filter(long, item %in% c("y1", "y2"))
+fit <- lme4::lmer(model, 
+                  data      = dat, 
+                  REML      = TRUE)
 
 
 longDF %>% filter()
 
-longDF <- long
-i=1
-outcome = "value"
-allIndicators = c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
 
 
 fit1 <- lme (value~-1+dummy_y1+dummy_y2, random =~ -1+dummy_y1+dummy_y2|cluster/id, data=long, method = "ML")
