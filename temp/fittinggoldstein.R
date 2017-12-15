@@ -1,3 +1,7 @@
+# TODO:
+# Look below to the section after my goldstein function
+
+
 # Decisions to keep in mind
 # 1. Subset the rows corresponding to only relevant items
 # 2. do comparisons pairwise (as opposed to 3 at a time,etc)
@@ -12,6 +16,7 @@
 # play around with different optimizers
 # REML vs ML
 
+install.packages('nlme')
 
 
 library('nlme')
@@ -34,6 +39,8 @@ for (level in unique(long$item)) {
   long[level] <- ifelse(long$item == level, 1, 0)
 }
 # ------------------------------------------------------------------------------
+
+
 
 
 
@@ -130,14 +137,54 @@ endTime-startTime
 form <- paste("y1", "y2", sep = "+")
 model <- as.formula(paste0("value","~0+", form, "+(0+", form, "|cluster/id)"))
 dat <- dplyr::filter(long, item %in% c("y1", "y2"))
+fit <- nlme::lme(value ~ -1 + y1 + y2, random = ~ -1+y1+y2|cluster/id, data=dat)
+
+
+# the following is the 'nlme' package function for pulling out the variance covariance matrices
+# I am trying to pull it apart and make something similar for more than two levels
+# this function uses some matrix which I can't make out what it is yet
+# figure out what this matrix is. See if I can reproduce the matrix with the variances (or sd's) + correlations
+# if they are the same make my own function for (getVCE) which takes two objects (lme model, and level)
+# build this into the overall model
+# finally fit one of these models in SAS and make sure the VCE's are the same.
+
+summary(fit)
+random.effects(fit)
+getVarCov(fit)
+intervals(fit)
+?getVarCov
 fit <- lme4::lmer(model, 
                   data      = dat, 
                   REML      = TRUE)
 
 
-longDF %>% filter()
+    sigma <- fit$sigma
+    D <- as.matrix(fit$modelStruct$reStruct[[1]]) * sigma^2
+    fit$modelStruct$reStruct$id
+    
+fit$modelStruct$reStruct
+fit$dims
+fit$coefficients
+fit$coefficients$random$id
+fit$sigma
+fit$apVar
+str(fit$apVar)
+fit$logLik
+fit$numIter
+fit$groups
+fit$terms
+getVarCov
+getVarCov.lme
+methods("getVarCov")
+?methods()
+methods('getVarCov', 'lme')
+edit(getAnywhere("getVarCov"))
+fit$sigma
 
+  
+  longDF %>% filter()
 
+getVarCov.lme
 
 fit1 <- lme (value~-1+dummy_y1+dummy_y2, random =~ -1+dummy_y1+dummy_y2|cluster/id, data=long, method = "ML")
 
