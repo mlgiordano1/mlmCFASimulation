@@ -1,11 +1,19 @@
-# use longDF, allIndicators, fitWith (nlme, lmer), 
-# return a list of two matrices (within and between)
-goldstein <- function(longDF, 
-                      outcome,
-                      allIndicators) {
-  # Program some checks, like is longDF a DF, fitWith =nlme or lmer, 
+# return within and between models
+goldstein <- function(withinModel,
+                      betweenModel,
+                      allIndicators,
+                      l1Var,
+                      l2Var,
+                      df) {
+  # Program some checks, like is long a DF, fitWith =nlme or lmer, 
   # all indicators is charater, etc.
-  # save all combinations
+  # Process the data
+  long <- reshape2::melt(df, id.vars = c(l1Var, l2Var), variable.name = "item")
+  # dummy code the indicators
+  for (level in unique(long$item)) {
+    long[level] <- ifelse(long$item == level, 1, 0)
+  }
+  # save combinations of indicators
   combinations <- t(combn(allIndicators, m=2))
   # create the matrices 
   wCovMat <- matrix(nrow=length(allIndicators), ncol=length(allIndicators), 
@@ -19,10 +27,10 @@ goldstein <- function(longDF,
     i2 <- combinations[i,2]
     # Create the model and random statements
     form <- paste(i1, i2 , sep = "+" )
-    model <- as.formula(paste0(outcome,"~ -1 +", form))
+    model <- as.formula(paste0("value~ -1 +", form))
     ranef <- as.formula(paste("~-1 + ", form, "|cluster/id"))
     # subset the rows we want
-    subset <- dplyr::filter(.data = longDF, item %in% c(i1, i2))
+    subset <- dplyr::filter(.data = long, item %in% c(i1, i2))
     # Try catch incase models do not converge
     tryCatch({
       print(i)
@@ -44,15 +52,17 @@ goldstein <- function(longDF,
       bCovMat[i2, i1] <- covMats$between[i2, i1]
     }, 
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
-  } # end of the for loop
-  return(list(within=wCovMat, between=bCovMat))
-  # ---------------------------------------------------------------------------
-  #
-  # The actual best way to do this would be to fit these with MIIVsem
-  #
-  # ---------------------------------------------------------------------------
-  
-} # end of the function;;;
+  } # end of for loop making covariance matrices
+  # Fit covariance matrices with MIIVsem
+  w <- MIIVsem::miive(withinModel,  
+                      sample.cov = wCovMat, 
+                      sample.nobs = nrow(df))
+  b <- MIIVsem::miive(betweenModel, 
+                      sample.cov = bCovMat, 
+                      sample.nobs = nrow(unique(df[l2Var])))
+  # return the list of within and between models
+  return(list(within=w, between=b))
+} # end of the function
 
 
 
