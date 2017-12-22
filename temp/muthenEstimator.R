@@ -1,3 +1,5 @@
+library(magrittr)
+
 # Generic covariance matrix computation (compare to the 'cov()' function)
 covMat <- function(matrix) {
   # number of subjects
@@ -25,4 +27,43 @@ cov(ex)
 # and that might do it
 
 # muthen estimator
+set.seed(1)
+xGroup1 <- rnorm(n = 30, mean = 100, 2)
+xGroup2 <- rnorm(n = 30, mean = 110, 2)
+yGroup1 <- rnorm(n = 30, mean = 0, 2)
+yGroup2 <- rnorm(n = 30, mean = 10, 2)
 
+x <- c(xGroup1, xGroup2)
+y <- c(yGroup1, yGroup2)
+
+dat <- cbind(c(rep(1, 30), rep(2, 30)), x, y)
+colnames(dat) <- c("id", "x", "y")
+dat
+
+datMn <- as.data.frame(dat) %>% 
+  dplyr::group_by(id) %>%
+  dplyr::summarise(x_mn = mean(x), y_mn = mean(y))
+merge(dat, datMn, by = "id")
+
+
+as.data.frame(dat) %>%
+      #add_rownames()%>% #if the rownames are needed as a column
+      dplyr::group_by(id) %>% 
+      dplyr::mutate(x_c= x-mean(x), y_c = y-mean(y)) %>%
+      dplyr::select(x_c, y_c)
+
+
+# Generic covariance matrix computation (compare to the 'cov()' function)
+muth_w_Mat <- function(matrix) {
+  # number of subjects
+  n <- nrow(matrix) 
+  # means (might be a better way to do this)
+  means <- t(matrix(rep(colMeans(matrix), n), ncol=n))
+  # difference matrix
+  d <- as.data.frame(dat) %>%
+      dplyr::group_by(cluster) %>% 
+      dplyr::mutate(x_c= x-mean(x), y_c = y-mean(y)) %>%
+      dplyr::select(x_c, y_c)
+  #covariance matrix
+  return((1/(n-1)) * t(d) %*% d)
+}
