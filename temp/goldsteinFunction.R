@@ -1,13 +1,64 @@
+# withinModel = wModel
+# betweenModel = bModel
+# estimator = "goldstein"
+# allIndicators = indicators
+# l1Var = "id"
+# l2Var = "cluster"
+# df = myData
+
+
 # return within and between models
-goldstein <- function(withinModel,
+mlcfaMIIV <- function(withinModel,
                       betweenModel,
+                      estimator = "muthen",
                       allIndicators,
                       l1Var,
                       l2Var,
                       df) {
   # Program some checks, like is long a DF, fitWith =nlme or lmer, 
   # all indicators is charater, etc.
+  
+  # -----------------------------------------------------------------
+  # Do some universal steps
+  # number of subjects
+  n <- nrow(df) 
+  # number of groups
+  g <- length(unique(df[[l2Var]]))
+  # -----------------------------------------------------------------
+
+    
+  # -----------------------------------------------------------------
   # Process the data
+  if (estimator == "muthen") {
+    # decompose muthen style
+    covMats <- decompMuthen(allIndicators, l1Var, l2Var, df, n=n, g=g)
+  } else if (estimator == "goldstein") {
+    # decompose muthen style
+    covMats <- decompGoldstein(allIndicators, l1Var, l2Var, df)
+  }
+  # -----------------------------------------------------------------
+
+  
+  # -----------------------------------------------------------------
+  # fit with MIIVsem
+  # Fit covariance matrices with MIIVsem
+  w <- MIIVsem::miive(withinModel,  
+                      sample.cov = covMats[["within"]], 
+                      sample.nobs = n)
+  # b <- MIIVsem::miive(betweenModel, 
+  #                     sample.cov = covMats[["between"]], 
+  #                     sample.nobs = g)
+  b = covMats[["between"]]
+  # return the list of within and between models
+  return(list(within=w, between=b))
+} # end function
+  
+  
+decompGoldstein <- function(allIndicators,
+                            l1Var,
+                            l2Var,
+                            df) {
+  # make long (necessary for fitting in nlme)
   long <- reshape2::melt(df, id.vars = c(l1Var, l2Var), variable.name = "item")
   # dummy code the indicators
   for (level in unique(long$item)) {
@@ -53,17 +104,8 @@ goldstein <- function(withinModel,
     }, 
     error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   } # end of for loop making covariance matrices
-  # Fit covariance matrices with MIIVsem
-  w <- MIIVsem::miive(withinModel,  
-                      sample.cov = wCovMat, 
-                      sample.nobs = nrow(df))
-  b <- MIIVsem::miive(betweenModel, 
-                      sample.cov = bCovMat, 
-                      sample.nobs = nrow(unique(df[l2Var])))
-  # return the list of within and between models
-  return(list(within=w, between=b))
+  return(list(within=wCovMat, between=bCovMat))  
 } # end of the function
-
 
 
 getVCE <- function(twoLvlnlmeObj, names) {
@@ -87,4 +129,41 @@ getVCE <- function(twoLvlnlmeObj, names) {
   rownames(w.cov) <- names
   # compile two matices in a list
   return(list(within=w.cov, between=b.cov))
+}
+
+
+
+
+decompMuthen <- function(allIndicators,
+                            l1Var,
+                            l2Var,
+                            df,
+                            n,
+                            g) {
+  #-------------------------------------------------------------------
+  # within covariance matrices
+  grpMnNames <- paste(allIndicators, "_mn", sep = "")
+  # group means
+  temp <- aggregate(df[allIndicators], 
+            by = list(cluster = df[[l2Var]]), 
+            FUN = mean)
+  # naming 
+  names(temp) <- c(l2Var, grpMnNames)
+  # merging back together
+  df <- merge(df, temp, by = l2Var)
+  # 
+  a <- df[allIndicators]
+  b <- df[grpMnNames]
+  # difference matrix
+  d <- as.matrix(a-b)
+  # covariance matrix
+  wCovMat <- ((1/(n-g-1)) * t(d) %*% d)
+  
+  # -----------------------------------------------------------------
+  # between
+  bCovMat <- "tbd"
+  
+  # return
+  return(list(within=wCovMat, between=bCovMat)) 
+
 }

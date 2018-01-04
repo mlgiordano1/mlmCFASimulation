@@ -46,6 +46,8 @@ myData$id <- 1:nrow(myData)
 
 # save some values
 indicators = c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
+indicators = c("y1", "y2", "y3")
+
 
 bModel <- '
 l1 =~ y1+y2+y3+y4+y5+y6+y7+y8+y9
@@ -58,6 +60,14 @@ l3=~y7+y8+y9+y6
 l1~~l2
 l1~~l3
 l2~~l3'
+
+temp <- mlcfaMIIV(withinModel = wModel,
+                  betweenModel = bModel, 
+                  estimator = "muthen",
+                  allIndicators = indicators,
+                  l1Var = "id", 
+                  l2Var = "cluster", 
+                  df = myData)
 
 
 # TESting the time

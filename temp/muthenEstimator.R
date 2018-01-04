@@ -21,7 +21,7 @@ covMat(ex)
 cov(ex)
 
 
-# So a decent approach will be to program a function to compute.
+# So a decent approach will be to program a function to compute cov matrices
 # but then also go through it and do some by hand computations
 # I think I need to create a matrix with group means, use that as the difference matrix
 # and that might do it
@@ -53,17 +53,29 @@ as.data.frame(dat) %>%
       dplyr::select(x_c, y_c)
 
 
+matrix <- myData
 # Generic covariance matrix computation (compare to the 'cov()' function)
+# only going to work with y1-y9
 muth_w_Mat <- function(matrix) {
   # number of subjects
   n <- nrow(matrix) 
-  # means (might be a better way to do this)
-  means <- t(matrix(rep(colMeans(matrix), n), ncol=n))
+  # number of groups
+  g <- length(unique(matrix$cluster))
   # difference matrix
-  d <- as.data.frame(dat) %>%
-      dplyr::group_by(cluster) %>% 
-      dplyr::mutate(x_c= x-mean(x), y_c = y-mean(y)) %>%
-      dplyr::select(x_c, y_c)
+  d <- as.data.frame(matrix) %>%
+          dplyr::group_by(cluster) %>% 
+          dplyr::mutate(y1c= y1-mean(y1),
+                        y2c= y2-mean(y2),
+                        y3c= y3-mean(y3),
+                        y4c= y4-mean(y4),
+                        y5c= y5-mean(y5),
+                        y6c= y6-mean(y6),
+                        y7c= y7-mean(y7),
+                        y8c= y8-mean(y8),
+                        y9c= y9-mean(y9)) %>%
+          dplyr::select(cluster,y1c, y2c, y3c, y4c, y5c, y6c, y7c, y8c, y9c)
+  # coerce d to matrix
+  d <- as.matrix(d[c("y1c", "y2c", "y3c", "y4c", "y5c", "y6c", "y7c", "y8c", "y9c")])
   #covariance matrix
-  return((1/(n-1)) * t(d) %*% d)
+  return((1/(n-g-1)) * t(d) %*% d)
 }
