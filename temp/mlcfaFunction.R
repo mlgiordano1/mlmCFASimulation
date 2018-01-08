@@ -182,7 +182,8 @@ decompMuthen <- function(allIndicators,
   # difference matrix
   d <- as.matrix(agg[mnNames]-agg[grpMnNames])
   # covariance matrix
-  bCovMat <- ((nMn/(g-1)) * t(d) %*% d)
+  # bCovMat <- ((nMn/(g-1)) * t(d) %*% d)
+  bCovMat <- ((g-1) * t(nMn*d) %*% d)
   # names
   colnames(bCovMat)  <- allIndicators
   rownames(bCovMat)  <- allIndicators
