@@ -1,0 +1,5 @@
+1. Program the Goldstein Estimator
+   The first thing here is to figure out the most efficient way to estimate the covariance matrices.
+   Once we have that can it.
+   
+2. Either program the Muthen Estimator, or work on the more general simulation setup

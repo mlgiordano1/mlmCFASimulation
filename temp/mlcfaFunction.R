@@ -1,11 +1,12 @@
 # withinModel = wModel
 # betweenModel = bModel
-# estimator = "goldstein"
+# estimator = "muthen"
 # allIndicators = indicators
 # l1Var = "id"
 # l2Var = "cluster"
 # df = myData
-
+# 
+# install.packages("MIIVsem")
 
 # return within and between models
 mlcfaMIIV <- function(withinModel,
@@ -36,7 +37,7 @@ mlcfaMIIV <- function(withinModel,
     # decompose muthen style
     covMats <- decompGoldstein(allIndicators, l1Var, l2Var, df)
   }
-  # -----------------------------------------------------------------
+
 
   
   # -----------------------------------------------------------------
@@ -45,10 +46,9 @@ mlcfaMIIV <- function(withinModel,
   w <- MIIVsem::miive(withinModel,  
                       sample.cov = covMats[["within"]], 
                       sample.nobs = n)
-  # b <- MIIVsem::miive(betweenModel, 
-  #                     sample.cov = covMats[["between"]], 
-  #                     sample.nobs = g)
-  b = covMats[["between"]]
+  b <- MIIVsem::miive(betweenModel,
+                      sample.cov = covMats[["between"]],
+                      sample.nobs = g)
   # return the list of within and between models
   return(list(within=w, between=b))
 } # end function
@@ -141,28 +141,51 @@ decompMuthen <- function(allIndicators,
                             n,
                             g) {
   #-------------------------------------------------------------------
+  # some general setup
+  # ------------------------------------------------------------------
+  grpMnNames <- paste(allIndicators, "_gmn", sep = "")
+  mnNames    <- paste(allIndicators, "_mn" , sep = "")
+  grpSizeNames <- paste(allIndicators, "_n" , sep = "")
+  # creating an aggregated data set (with group means and group sizes)
+  agg <- cbind(aggregate(df[allIndicators], 
+                        by = list(cluster = df[[l2Var]]), 
+                        FUN = mean), 
+                aggregate(df[l2Var], 
+                          by = list(cluster = df[[l2Var]]), 
+                          FUN = length)
+  )
+  # dropping the repeat "cluster" var
+  agg <- agg[,-(ncol(agg)-1)]
+  # adding names
+  names(agg) <- c("cluster", grpMnNames, "grpSize")
+  
+  #-------------------------------------------------------------------
   # within covariance matrices
-  grpMnNames <- paste(allIndicators, "_mn", sep = "")
-  # group means
-  temp <- aggregate(df[allIndicators], 
-            by = list(cluster = df[[l2Var]]), 
-            FUN = mean)
-  # naming 
-  names(temp) <- c(l2Var, grpMnNames)
-  # merging back together
-  df <- merge(df, temp, by = l2Var)
-  # 
-  a <- df[allIndicators]
-  b <- df[grpMnNames]
-  # difference matrix
-  d <- as.matrix(a-b)
-  # covariance matrix
+  # ------------------------------------------------------------------
+  # merge agg with full df
+  df <- merge(df, agg, by = l2Var)
+  # Create difference matrix
+  d <- as.matrix(df[allIndicators]-df[grpMnNames])
+  # Create covariance matrix
   wCovMat <- ((1/(n-g-1)) * t(d) %*% d)
   
-  # -----------------------------------------------------------------
-  # between
-  bCovMat <- "tbd"
-  
+  #-------------------------------------------------------------------
+  # between covariance matrices
+  # ------------------------------------------------------------------
+  # average cluster size
+  nMn <- mean(agg[['grpSize']])
+  # save overall average for each indicator
+  for (i in seq(allIndicators)) {
+    agg <- cbind(agg, mean(df[[allIndicators[i]]]))
+  }
+  names(agg) <- c("cluster", grpMnNames, "grpSize", mnNames)
+  # difference matrix
+  d <- as.matrix(agg[mnNames]-agg[grpMnNames])
+  # covariance matrix
+  bCovMat <- ((nMn/(g-1)) * t(d) %*% d)
+  # names
+  colnames(bCovMat)  <- allIndicators
+  rownames(bCovMat)  <- allIndicators
   # return
   return(list(within=wCovMat, between=bCovMat)) 
 

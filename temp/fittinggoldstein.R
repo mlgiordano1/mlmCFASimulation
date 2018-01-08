@@ -27,7 +27,7 @@
 library('magrittr')
 
 setwd("C:/Users/mgiordan/git/mlmcfasimulation/temp")
-source("goldsteinFunction.R")
+source("mlcfaFunction.R")
 
 
 # ------------------------------------------------------------------------------
@@ -69,6 +69,7 @@ temp <- mlcfaMIIV(withinModel = wModel,
                   l2Var = "cluster", 
                   df = myData)
 
+temp$between
 
 # TESting the time
 startTime <- proc.time()
