@@ -45,10 +45,12 @@ mlcfaMIIV <- function(withinModel,
   # Fit covariance matrices with MIIVsem
   w <- MIIVsem::miive(withinModel,  
                       sample.cov = covMats[["within"]], 
-                      sample.nobs = n)
+                      sample.nobs = n, 
+                      var.cov = TRUE)
   b <- MIIVsem::miive(betweenModel,
                       sample.cov = covMats[["between"]],
-                      sample.nobs = g)
+                      sample.nobs = g,
+                      var.cov = TRUE)
   # return the list of within and between models
   return(list(within=w, between=b))
 } # end function
