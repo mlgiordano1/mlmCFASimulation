@@ -71,8 +71,8 @@ myData2 <- gen(sampleSize = 3000,
                clustSize = 30, 
                varWithinLV = 1, 
                varWithinIndE = .5, 
-               varBtwLV = 1, 
-               varBtwIndE = 3)
+               varBtwLV = 2, 
+               varBtwIndE = .5)
 
 
 
@@ -83,7 +83,7 @@ temp <- mlcfaMIIV(withinModel = wModel,
                   allIndicators = indicators,
                   l1Var = "id", 
                   l2Var = "cluster", 
-                  df = myData2)
+                  df = myData)
 
 temp$within
 temp$between
