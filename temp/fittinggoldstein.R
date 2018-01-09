@@ -28,7 +28,7 @@ library('magrittr')
 
 setwd("C:/Users/mgiordan/git/mlmcfasimulation/temp")
 source("mlcfaFunction.R")
-source("simulateFunction.R")
+source("simulating mlcfa.R")
 
 # --------------------------------------------------------------------------
 # The model we will use
@@ -67,9 +67,13 @@ names(myData) <- c(paste0("y", 1:9), "cluster")
 myData$id <- 1:nrow(myData)
 # ------------------------------------------------------------------------------
 
+myData2 <- gen(sampleSize = 3000, 
+               clustSize = 30, 
+               varWithinLV = 1, 
+               varWithinIndE = .5, 
+               varBtwLV = 1, 
+               varBtwIndE = 3)
 
-myData2 <- simMLCfa(wSimModel, bSimModel)
-myData2$id <- 1:3000
 
 
 
