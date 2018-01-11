@@ -1,4 +1,12 @@
-Finish the muthen estimator??
+
+1. create a working toy simulation (sim.R file)
+	a. generate data in Mplus and save to data folder with naming convention
+	b. read each data file
+	c. fit with each function
+	d. edit MIIV function to use Huang decomp for Muthen
+
+2. once toy simulation is up and running start to play with other things below
+
 
 test the functions against the example/results in the Hox book
 

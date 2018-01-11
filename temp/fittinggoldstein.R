@@ -70,8 +70,8 @@ myData$id <- 1:nrow(myData)
 myData2 <- gen(sampleSize = 3000, 
                clustSize = 30, 
                varWithinLV = 1, 
-               varWithinIndE = .5, 
-               varBtwLV = 2, 
+               varWithinIndE = 1, 
+               varBtwLV = 1, 
                varBtwIndE = .5)
 
 
@@ -83,7 +83,7 @@ temp <- mlcfaMIIV(withinModel = wModel,
                   allIndicators = indicators,
                   l1Var = "id", 
                   l2Var = "cluster", 
-                  df = myData)
+                  df = myData2)
 
 temp$within
 temp$between
