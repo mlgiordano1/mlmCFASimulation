@@ -1,5 +1,7 @@
 # TODO
 # add in the outside decomp to the muthen estimator
+# remove printing function
+# add a progress bar?
 
 
 # Create a base directory on your own
