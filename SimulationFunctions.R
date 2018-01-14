@@ -29,7 +29,8 @@ createDesignMatrix <- function(nIter,sampleSize,clusterSizes,
                           clusterSizes,
                           modelSpec,
                           distribution,
-                          estimators)
+                          estimators, 
+                          stringsAsFactors = FALSE)
   # name the columns will make it easier to pull
   names(localMat) <- c("Iteration",
                       "sampleSize",
@@ -290,12 +291,15 @@ mlcfaMIIV <- function(withinModel,
     
   # -----------------------------------------------------------------
   # Process the data
-  if (estimator == "muthen") {
+  if (tolower(estimator) == "muthen") {
     # decompose muthen style
     covMats <- decompMuthen(allIndicators, l1Var, l2Var, df, n=n, g=g)
-  } else if (estimator == "goldstein") {
+  } else if (tolower(estimator) == "goldstein") {
     # decompose muthen style
     covMats <- decompGoldstein(allIndicators, l1Var, l2Var, df)
+  }
+  else {
+    print("incorrect estimator entered")
   }
 
 
