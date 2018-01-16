@@ -221,18 +221,18 @@ output:
 
 
 # credit script to Francis L. Huang
+# Edited for my purposes
 # working paper on mcfa in R with Lavaan
-mcfa.input<-function(gp,dat){
+mcfa.input<-function(l1Var, l2Var, dat){
     dat1    <- dat[complete.cases(dat),]
-    g       <- dat1[,gp]            #grouping
+    g       <- dat1[,l2Var]            #grouping
     freq    <- data.frame(table(g))
-    gn      <- grep(gp,names(dat1)) #which column number is the grouping var
-    dat2    <- dat1[,-gn]           #raw only
+    dat2    <- dat1[,!names(dat1) %in% c(l1Var, l2Var)] #select all but l1/l2 vars
     G       <- length(table(g))
     n       <- nrow(dat2)
     k       <- ncol(dat2)
     scaling <- (n^2-sum(freq$Freq^2)) / (n*(G-1))
-    varn    <- names(dat1[,-gn])
+    varn    <- names(dat2)
     ms      <- matrix(0,n,k)
    for (i in 1:k){
       ms[,i]<-ave(dat2[,i],g)
@@ -293,7 +293,8 @@ mlcfaMIIV <- function(withinModel,
   # Process the data
   if (tolower(estimator) == "muthen") {
     # decompose muthen style
-    covMats <- decompMuthen(allIndicators, l1Var, l2Var, df, n=n, g=g)
+    muth <- mcfa.input(l1Var, l2Var, dat = df)
+    covMats <- list(within = muth$pw.cov, between=muth$ab.cov)
   } else if (tolower(estimator) == "goldstein") {
     # decompose muthen style
     covMats <- decompGoldstein(allIndicators, l1Var, l2Var, df)
@@ -302,8 +303,6 @@ mlcfaMIIV <- function(withinModel,
     print("incorrect estimator entered")
   }
 
-
-  
   # -----------------------------------------------------------------
   # fit with MIIVsem
   # Fit covariance matrices with MIIVsem
@@ -350,7 +349,7 @@ decompGoldstein <- function(allIndicators,
     subset <- dplyr::filter(.data = long, item %in% c(i1, i2))
     # Try catch incase models do not converge
     tryCatch({
-      print(i)
+      #print(i)
       fit <- nlme::lme(fixed   = model, 
                             random  = ranef, 
                             data    = subset, 

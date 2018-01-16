@@ -44,31 +44,32 @@ fitModelDir <- paste0(getwd(), "/savedModels")
 # Set up the directory structure
 createDirStr(baseDir=baseDir)
 # make the design matrix
-designMatrix <- createDesignMatrix(
-                                    nIter = iterationsPer,
-                                    sampleSize = c(3000, 6000),
-                                    clusterSizes = c("bal", "unbal"),
-                                    modelSpec = c("trueModel", "misSpec"),
-                                    distribution = c("normal", "non-Normal"),
-                                    estimators = c("FIML", "Goldstein", "Muthen"))
+designMatrix <- createDesignMatrix(nIter = iterationsPer,
+                                   sampleSize = c(3000, 6000),
+                                   clusterSizes = c("bal", "unbal"),
+                                   modelSpec = c("trueModel", "misSpec"),
+                                   distribution = c("normal", "non-Normal"),
+                                   estimators = c("FIML", "Goldstein", "Muthen"))
 
-# make DF names
+designMatrix <- designMatrix[designMatrix$estimators=="Muthen",]
+
+ # make DF names
 designMatrix$dfName <- paste0(dataDir, "/",
                               designMatrix$sampleSize, "_",
-                                designMatrix$clusterSizes, "_",
-                                designMatrix$modelSpec, "_",
-                                designMatrix$distribution, "_",
-                                designMatrix$Iteration,
-                                ".dat")
+                              designMatrix$clusterSizes, "_",
+                              designMatrix$modelSpec, "_",
+                              designMatrix$distribution, "_",
+                              designMatrix$Iteration,
+                              ".dat")
 #make rds name
 designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$sampleSize, "_",
                               designMatrix$clusterSizes, "_",
                               designMatrix$modelSpec, "_",
                               designMatrix$distribution, "_",
+                              designMatrix$estimators,
                               designMatrix$Iteration,
                               ".rds")
-
 
 # create data based on design matrix
 if (makeNewData==TRUE) {
@@ -78,7 +79,11 @@ if (makeNewData==TRUE) {
 }
 
 # do the thing
+ 
+pb <- txtProgressBar(min = 0, max = nrow(designMatrix), style = 3) 
+
 for (i in seq(nrow(designMatrix))) {
+  setTxtProgressBar(pb, i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
     next
