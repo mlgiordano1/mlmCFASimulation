@@ -5,7 +5,7 @@
 
 
 # Create a base directory on your own
-baseDir <- "C:/users/mgiordan/git/mlmcfasimulation"
+baseDir <- "nas/longleaf/home/mgiordan/practice"
 makeNewData <- FALSE
 # The model we will use
 bModelTrue <- '
@@ -49,9 +49,9 @@ designMatrix <- createDesignMatrix(nIter = iterationsPer,
                                    clusterSizes = c("bal", "unbal"),
                                    modelSpec = c("trueModel", "misSpec"),
                                    distribution = c("normal", "non-Normal"),
-                                   estimators = c("FIML", "Goldstein", "Muthen"))
+                                   estimators = c("Goldstein"))
 
-designMatrix <- designMatrix[designMatrix$estimators=="Muthen",]
+designMatrix <- designMatrix[5,]
 
  # make DF names
 designMatrix$dfName <- paste0(dataDir, "/",
@@ -80,10 +80,10 @@ if (makeNewData==TRUE) {
 
 # do the thing
  
-pb <- txtProgressBar(min = 0, max = nrow(designMatrix), style = 3) 
+#pb <- txtProgressBar(min = 0, max = nrow(designMatrix), style = 3) 
 
 for (i in seq(nrow(designMatrix))) {
-  setTxtProgressBar(pb, i)
+  #setTxtProgressBar(pb, i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
     next
