@@ -1,6 +1,6 @@
 Mplus VERSION 7
 MUTHEN & MUTHEN
-01/08/2018   1:40 PM
+01/14/2018   2:59 PM
 
 INPUT INSTRUCTIONS
 
@@ -710,14 +710,8 @@ TECHNICAL 1 OUTPUT
  L4             0.000         0.000         0.000         0.050
 
 
-DIAGRAM INFORMATION
-
-  Mplus diagrams are currently not available for multilevel analysis.
-  No diagram output was produced.
-
-
-     Beginning Time:  13:40:32
-        Ending Time:  13:40:33
+     Beginning Time:  14:59:52
+        Ending Time:  14:59:53
        Elapsed Time:  00:00:01
 
 

@@ -62,7 +62,7 @@ indicators = c("y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "y9")
 
 # ------------------------------------------------------------------------------
 # Process Data
-myData <- read.table(file = "C:/users/mgiordan/git/mlmcfasimulation/temp/tempdata_1.dat")
+myData <- read.table(file = "C:\\Users\\mgiordan\\git\\mlmCFASimulation\\rawData\\3000_bal_misSpec_normal_1.dat")
 names(myData) <- c(paste0("y", 1:9), "cluster")
 myData$id <- 1:nrow(myData)
 # ------------------------------------------------------------------------------

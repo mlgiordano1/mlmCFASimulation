@@ -4,6 +4,8 @@
 	b. read each data file
 	c. fit with each function
 	d. edit MIIV function to use Huang decomp for Muthen
+	e. remove the printing from the goldstein
+	f. put in a progress bar. 
 
 2. once toy simulation is up and running start to play with other things below
 
