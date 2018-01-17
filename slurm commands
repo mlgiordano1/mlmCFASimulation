@@ -1,0 +1,10 @@
+sbatch sim1.sl
+sbatch sim2.sl
+sbatch sim3.sl
+sbatch sim4.sl
+sbatch sim5.sl
+sbatch sim6.sl
+sbatch sim7.sl
+sbatch sim8.sl
+sbatch sim9.sl
+sbatch sim10.sl

@@ -58,7 +58,7 @@ designMatrix <- createDesignMatrix(nIter = iterationsPer,
                                    distribution = c("normal", "non-Normal"),
                                    estimators = c("Goldstein"))
 
-designMatrix <- designMatrix[1:5,]
+# designMatrix <- designMatrix[1:5,]
 
  # make DF names
 designMatrix$dfName <- paste0(dataDir, "/",
@@ -89,7 +89,7 @@ if (makeNewData==TRUE) {
  
 #pb <- txtProgressBar(min = 0, max = nrow(designMatrix), style = 3) 
 
-for (i in seq(nrow(designMatrix))) {
+for (i in 26:30) {
   #setTxtProgressBar(pb, i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
