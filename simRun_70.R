@@ -1,13 +1,10 @@
 
 
 # TODO
-# add in the outside decomp to the muthen estimator
-# remove printing function
-# add a progress bar?
-
-
+# 
 # Create a base directory on your own
 baseDir <- "/nas/longleaf/home/mgiordan/practice"
+# baseDir <- "c:/users/mgiordan/git/mlmcfasimulation"
 makeNewData <- FALSE
 # The model we will use
 bModelTrue <- '
@@ -32,7 +29,7 @@ l1~~l3
 l2~~l3
 '
 # number of iterations
-iterationsPer <- 5
+iterationsPer <- 600
 
 
 #----------------------------------------------------------------------------
@@ -43,10 +40,10 @@ library("lavaan", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 library("MIIVsem", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 library("nlme", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 
- setwd(baseDir)
+setwd(baseDir)
 # source relevant functions
 source("SimulationFunctions.R")
-dataDir <- paste0(baseDir, "/rawData")
+dataDir <- paste0(baseDir, "/rawData/rawData")
 fitModelDir <- paste0(baseDir, "/savedModels")
 # Set up the directory structure
 createDirStr(baseDir=baseDir)
@@ -56,11 +53,11 @@ designMatrix <- createDesignMatrix(nIter = iterationsPer,
                                    clusterSizes = c("bal", "unbal"),
                                    modelSpec = c("trueModel", "misSpec"),
                                    distribution = c("normal", "non-Normal"),
-                                   estimators = c("Goldstein"))
+                                   estimators = c("Goldstein", "Muthen"))
 
 #designMatrix <- designMatrix[1:5,]
 
- # make DF names
+# make DF names
 designMatrix$dfName <- paste0(dataDir, "/",
                               designMatrix$sampleSize, "_",
                               designMatrix$clusterSizes, "_",
@@ -81,7 +78,7 @@ designMatrix$rdsName <- paste0(fitModelDir, "/",
 # create data based on design matrix
 if (makeNewData==TRUE) {
   makeDataMplus(wd = "C:/Users/mgiordan/git/mlmcfasimulation",
-                iterations = 5,
+                iterations = iterationsPer,
                 designMatrix = designMatrix)
 }
 
@@ -89,7 +86,7 @@ if (makeNewData==TRUE) {
  
 #pb <- txtProgressBar(min = 0, max = nrow(designMatrix), style = 3) 
 
-for (i in 70:70) {
+for (i in 13249:13440) {
   #setTxtProgressBar(pb, i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {

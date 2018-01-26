@@ -3,8 +3,8 @@ setwd("c:/users/mgiordan/git/mlmcfasimulation")
 # simulation file - this is the file with you general simulation code
 # we are basically only going to replace the parameters of the for loop
 simFile <- "sim.R"
-totalIter <- 80      # how many iterations does your simulation have
-divideBy <- 80       # how many files would you like to split it into
+totalIter <- 19200      # how many iterations does your simulation have
+divideBy <- 100       # how many files would you like to split it into
 findBy <- "startingPoint" # what is the character sequence
 
 
@@ -20,7 +20,7 @@ a2 <- "#SBATCH --job-name=example"
 a3 <- "#SBATCH --ntasks=1"
 a4 <- "#SBATCH --cpus-per-task=1"
 a5 <- "#SBATCH --ntasks-per-node=1"
-a6 <- "#SBATCH --time=20:00"
+a6 <- "#SBATCH --time=08:00:00"
 a7 <- "#SBATCH --mem-per-cpu=1024"
 a8 <- "srun R CMD BATCH --no-save "
 
@@ -41,7 +41,7 @@ while (start1 <= totalIter) {
              paste0(a8, "simRun_", i, ".R ", "simRun_", i, ".Rout")), 
       sep = "\n",
       con = output.file)
-  close( con )
+  #close( con )
   #printing the commands
   cat(paste0("sbatch simRun_", i, ".sl\n"), file = "commands.txt", append = TRUE )
   print(paste0("Printing R file sequencing from-", start1, ":", stop1))
@@ -52,9 +52,6 @@ while (start1 <= totalIter) {
 }
 
 
-
-x <- 5
-y  = 3
 
 
 
