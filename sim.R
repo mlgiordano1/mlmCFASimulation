@@ -84,10 +84,10 @@ if (makeNewData==TRUE) {
 
 # do the thing
  
-#pb <- txtProgressBar(min = 0, max = nrow(designMatrix), style = 3) 
+# pb <- txtProgressBar(min = 0, max = nrow(designMatrix), style = 3) 
 
 for (i in startingPoint:stoppingPoint) {
-  #setTxtProgressBar(pb, i)
+  # setTxtProgressBar(pb, i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
     next
