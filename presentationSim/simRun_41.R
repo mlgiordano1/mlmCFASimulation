@@ -25,7 +25,7 @@ fitModelDir <- paste0(getwd(), "/savedModels")
 designMatrix <- designMatrix[which(designMatrix$estimators==estimator),]
 
 
-for (i in seq(nrow(designMatrix))) { # startingPoint!
+for (i in 3201:3280) {
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
     next
