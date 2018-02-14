@@ -21,11 +21,12 @@ a2 <- "#SBATCH --job-name=example"
 a3 <- "#SBATCH --ntasks=1"
 a4 <- "#SBATCH --cpus-per-task=1"
 a5 <- "#SBATCH --ntasks-per-node=1"
-a6 <- "#SBATCH --time=12:00:00"
+a6 <- "#SBATCH --time=05:00:00"     #HH:MM:SS
 a7 <- "#SBATCH --mem-per-cpu=1024"
 a8 <- "srun R CMD BATCH --no-save "
 
-cat("module add -r", file = "commands.txt", append = TRUE )
+cat("module load -r\n", file = "commands.txt", append = TRUE )
+cat("module list\n", file = "commands.txt", append = TRUE )
 start1 <- 1
 stop1 <- nPer
 i <- 1
@@ -42,6 +43,7 @@ while (start1 <= totalIter) {
              paste0(a8, "simRun_", i, ".R ", "simRun_", i, ".Rout")), 
       sep = "\n",
       con = output.file)
+  close.connection(output.file)
   #close( con )
   #printing the commands
   cat(paste0("sbatch simRun_", i, ".sl\n"), file = "commands.txt", append = TRUE )
@@ -51,16 +53,3 @@ while (start1 <= totalIter) {
   stop1 <- start1+nPer-1
   i = i+1
 }
-closeAllConnections()
-
-
-
-
-
-
-
-
-
-
-
-

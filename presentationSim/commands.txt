@@ -1,4 +1,6 @@
-module add -rsbatch simRun_1.sl
+module load -r
+module list
+sbatch simRun_1.sl
 sbatch simRun_2.sl
 sbatch simRun_3.sl
 sbatch simRun_4.sl
