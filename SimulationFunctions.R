@@ -1,3 +1,4 @@
+
 # Create Directory Structure
 # only run this once because it will overwrite everything else
 createDirStr <- function(baseDir) {
