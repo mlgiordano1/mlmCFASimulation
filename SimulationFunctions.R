@@ -21,20 +21,27 @@ createDirStr <- function(baseDir) {
   }
 }
 
-createDesignMatrix <- function(nIter,sampleSize,clusterSizes,
-                               modelSpec,distribution,estimators) {
+createDesignMatrix <- function(nIter,
+                               clusterSize,
+                               clusterN,
+                               clusterBal,
+                               modelSpec,
+                               distribution,
+                               estimators) {
   # setup the Matrix
   localMat <- expand.grid(seq(nIter),
-                          sampleSize,
-                          clusterSizes,
+                          clusterSize,
+                          clusterN,
+                          clusterBal,
                           modelSpec,
                           distribution,
                           estimators, 
                           stringsAsFactors = FALSE)
   # name the columns will make it easier to pull
   names(localMat) <- c("Iteration",
-                      "sampleSize",
-                      "clusterSizes",
+                      "clusterSize",
+                      "clusterN",
+                      "clusterBal",
                       "modelSpec",
                       "distribution",
                       "estimators")
@@ -44,66 +51,56 @@ createDesignMatrix <- function(nIter,sampleSize,clusterSizes,
 makeDataMplus <- function(wd, iterations, designMatrix) {
   # get unique conditions
   dm <- designMatrix[c("sampleSize",
-                       "clusterSizes",
+                       "clusterSize",
+                       "clusterN",
+                       "clusterBal",
                        "modelSpec",
                        "distribution")]
   dm <- unique(dm)
   # data directory
   dataDir <- paste0(wd, "/rawData")
   # save mplusGenFile
-  fileName1 <- paste0(wd, "/temp.inp")
-  fileName2 <- paste0(wd, "/temp.out")
+  fileName1 <- paste0(dataDir, "/temp.inp")
+  fileName2 <- paste0(dataDir, "/temp.out")
   
   # loop through the various combinations to make the data
 for (i in seq(nrow(dm))) {
   title <- "
 ! DO NOT EDIT IN TEXT. EDIT IN PRIMARY SIMULATION CODE r FILE. 
-TITLE:	M3 Sim
+TITLE: Sim
 
 montecarlo:
-names are y1-y9 ;"
+names are y1-y6 ;"
 
 sampleSize <- paste("nobservations = ", dm[i,"sampleSize"], ";")
-if (dm[[i,"clusterSizes"]]=="bal") {
+if (dm[[i,"clusterBal"]]=="bal") {
   ncsizes <- paste("ncsizes = ", 1, ";")
+  csize <- paste0(dm[i, "clusterN"], " (", dm[i, "clusterSize"], ") !number (size)")
 }
-if (dm[[i,"clusterSizes"]]=="unbal") {
+if (dm[[i,"clusterBal"]]=="unbal") {
   ncsizes <- paste("ncsizes = ", 2, ";")
+  csize <- paste0((dm[i, "clusterN"]/2), " (", (dm[i, "clusterSize"]-15), ") ",
+                  (dm[i, "clusterN"]/2), " (", (dm[i, "clusterSize"]+15), ") !number (size)")
 }
-
-  #fill in csizes
-  if (dm$sampleSize[[i]] == 3000 && dm$clusterSizes[[i]]=="bal") {
-    csize <- "100 (30)"
-  }
-  if (dm$sampleSize[[i]] == 3000 && dm$clusterSizes[[i]]=="unbal") {
-    csize <- "50 (20) 50 (40)"
-  }
-  if (dm$sampleSize[[i]] == 6000 && dm$clusterSizes[[i]]=="bal") {
-    csize <- "200 (30)"
-  }
-  if (dm$sampleSize[[i]] == 6000 && dm$clusterSizes[[i]]=="unbal") {
-    csize <- "100 (20) 100 (40)"
-  }  
+ 
 csizes <- paste("csizes = ", csize, ";")
-seed <- paste("seed = ", round(runif(1, 0, 100)), ";")
+seed <- paste("seed = ", designMatrix$seed[i], ";")
 nrep <- paste("nrep = ", iterations, ";")
 rsave <- "repsave = ALL;"
 save <- paste("save = ", 
-              dataDir, 
-              "/",
-              paste(dm[i,"sampleSize"], 
-                    dm[i,"clusterSizes"],
+              paste(dm[i,"clusterBal"],
+                    dm[i,"clusterSize"], 
+                    dm[i,"clusterN"],
                     dm[i,"modelSpec"],
                     dm[i,"distribution"],
                     sep = "_"),
               "_*.dat;",
               sep = "")
-i=1
 
-paste0(designMatrix[i, c("sampleSize",
-                       "clusterSizes",
-                       "modelSpec",
-                       "distribution")])
+# paste0(designMatrix[i, c("sampleSize",
+#                        "clusterBal",
+#                        "modelSpec",
+#                        "distribution")])
 
 
 theRest <- "
@@ -119,78 +116,56 @@ MODEL POPULATION:
 	%Within%
   ! Loadings
   L1 by y1@1;
-  L1 by y2@1;
-  L1 by y3@1;
+  L1 by y2@.8;
+  L1 by y3@.7;
   L1 by y5@.3;
   L2 by y4@1;
-  L2 by y5@1;
-  L2 by y6@1;
-  L2 by y8@.3;
-  L3 by y7@1;
-  L3 by y8@1;
-  L3 by y9@1;
-  L3 by y6@.3;
+  L2 by y5@.8;
+  L2 by y6@.7;
+  L2 by y2@.3;
+  y2 with y3 @ .3;
 
-	y1-y9*1;
+	y1-y6*1;
 	L1*1;
   L2*1;
-  L3*1;
 
 	%Between%
   L4 by y1@1;
-  L4 by y2@1;
-  L4 by y3@1;
-  L4 by y5@1;
-  L4 by y4@1;
-  L4 by y5@1;
-  L4 by y6@1;
-  L4 by y8@1;
-  L4 by y7@1;
-  L4 by y8@1;
-  L4 by y9@1;
-  L4 by y6@1;  
-
+  L4 by y2@.7;
+  L4 by y3@.6;
+  L4 by y4@.8;
+  L4 by y5@.7;
+  L4 by y6@.8;
 	L4*.4;
-	y1-y9@1;
+	y1-y6@1;
 
 MODEL:
 	
 	%Within%
   ! Loadings
   L1 by y1@1;
-  L1 by y2@1;
-  L1 by y3@1;
+  L1 by y2@.8;
+  L1 by y3@.7;
   L1 by y5@.3;
   L2 by y4@1;
-  L2 by y5@1;
-  L2 by y6@1;
-  L2 by y8@.3;
-  L3 by y7@1;
-  L3 by y8@1;
-  L3 by y9@1;
-  L3 by y6@.3;
+  L2 by y5@.8;
+  L2 by y6@.7;
+  L2 by y2@.3;
+  y2 with y3 @ .3;
 
-	y1-y9*1;
+	y1-y6*1;
 	L1*1;
   L2*1;
-  L3*1;
 
 	%Between%
   L4 by y1@1;
-  L4 by y2@1;
-  L4 by y3@1;
-  L4 by y5@1;
-  L4 by y4@1;
-  L4 by y5@1;
-  L4 by y6@1;
-  L4 by y8@1;
-  L4 by y7@1;
-  L4 by y8@1;
-  L4 by y9@1;
-  L4 by y6@1;  
-
+  L4 by y2@.7;
+  L4 by y3@.6;
+  L4 by y4@.8;
+  L4 by y5@.7;
+  L4 by y6@.8;
 	L4*.4;
-	y1-y9@1;
+	y1-y6@1;
 
 output:
 	tech8 tech9;
@@ -208,7 +183,7 @@ output:
              theRest),
             fileName1)
   # run it
-    MplusAutomation::runModels(directory = wd)
+    MplusAutomation::runModels(directory = dataDir)
   # remove
   file.remove(fileName1)
   file.remove(fileName2)
