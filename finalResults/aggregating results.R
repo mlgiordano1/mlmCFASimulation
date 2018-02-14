@@ -108,8 +108,10 @@ sub <- aggwResults[aggwResults$sampleSize=='6000'&
 setwd("../")
 setwd("./finalResults")
 write.csv(sub, "tableOfwResults.csv")
-getwd()
 
+
+setwd("../")
+setwd("./savedModels")
 #make a df
 bResults <- matrix(nrow = length(allFiles), ncol = 15)
 
