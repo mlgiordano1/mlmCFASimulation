@@ -4,7 +4,7 @@ setwd("c:/users/mgiordan/git/mlmcfasimulation/presentationsim")
 # we are basically only going to replace the parameters of the for loop
 simFile <- "FitModels.R"
 totalIter <- 4000      # how many iterations does your simulation have
-divideBy <- 50       # how many files would you like to split it into
+divideBy <- 100       # how many files would you like to split it into
 findBy <-  "startingPoint"# what is the character sequence
 
 
@@ -21,7 +21,7 @@ a2 <- "#SBATCH --job-name=example"
 a3 <- "#SBATCH --ntasks=1"
 a4 <- "#SBATCH --cpus-per-task=1"
 a5 <- "#SBATCH --ntasks-per-node=1"
-a6 <- "#SBATCH --time=00:20:00"
+a6 <- "#SBATCH --time=12:00:00"
 a7 <- "#SBATCH --mem-per-cpu=1024"
 a8 <- "srun R CMD BATCH --no-save "
 

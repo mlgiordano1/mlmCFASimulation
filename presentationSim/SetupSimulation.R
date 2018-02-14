@@ -12,7 +12,7 @@ estimators   = c("FIML", "Goldstein", "Muthen") # FIML, Goldstein, Muthen
 
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/presentationSim"
-makeNewData <- TRUE
+makeNewData <- FALSE
 
 # The models we will use
 # check to make sure these match the data generating models
@@ -62,8 +62,8 @@ if (file.exists("seeds.rds")){
   
 # source relevant functions
 source("../simulationfunctions.R")
-dataDir <- paste0(getwd(), "/rawData")
-fitModelDir <- paste0(getwd(), "/savedModels")
+dataDir <- "rawData"
+fitModelDir <- "savedModels"
 # Set up the directory structure
 createDirStr(baseDir=baseDir)
 # make the design matrix

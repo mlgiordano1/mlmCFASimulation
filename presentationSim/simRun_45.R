@@ -1,6 +1,10 @@
+library("lavaan", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
+library("MIIVsem", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
+library("nlme", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
+
 # set the type to fit
-estimator <- "Muthen"
-baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/presentationSim"
+estimator <- "Goldstein"
+baseDir <- "/nas/longleaf/home/mgiordan/forumPres"
 setwd(baseDir)
 
 
@@ -17,15 +21,13 @@ bModelTrue    <- simParams$bModelTrue
 # Should not need to edit below this line
 #----------------------------------------------------------------------------
 # source relevant functions
-source("../simulationfunctions.R")
-dataDir     <- paste0(getwd(), "/rawData")
-fitModelDir <- paste0(getwd(), "/savedModels")
+source("SimulationFunctions.R")
 
 # subset just the estimator we want
 designMatrix <- designMatrix[which(designMatrix$estimators==estimator),]
 
 
-for (i in 3521:3600) {
+for (i in 1761:1800) {
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
     next
