@@ -102,6 +102,7 @@ designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$clusterN, "_",
                               designMatrix$modelSpec, "_",
                               designMatrix$distribution, "_",
+                              designMatrix$estimators,
                               designMatrix$Iteration,
                               ".rds")
 # create data based on design matrix

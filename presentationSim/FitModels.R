@@ -3,8 +3,9 @@ library("MIIVsem", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 library("nlme", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 
 # set the type to fit
-estimator <- "Goldstein"
+estimator <- "Muthen"
 baseDir <- "/nas/longleaf/home/mgiordan/forumPres"
+# baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/forumpres"
 setwd(baseDir)
 
 
