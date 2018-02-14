@@ -30,6 +30,7 @@ l1=~y1+y2+y3
 l2=~y4+y5+y6
 l1~~l2
 '
+
 # number of iterations
 iterationsPer <- 500
 
