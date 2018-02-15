@@ -1,6 +1,6 @@
 *.dat
 *.log
-*.rds      # exclude .rds files
+*.rds    
 *.inp
 *.out
 
