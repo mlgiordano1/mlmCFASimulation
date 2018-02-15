@@ -119,54 +119,32 @@ MODEL POPULATION:
   L1 by y1@1;
   L1 by y2@.8;
   L1 by y3@.7;
-  L1 by y5@.3;
-  L2 by y4@1;
-  L2 by y5@.8;
-  L2 by y6@.7;
-  L2 by y2@.3;
-  y2 with y3 @ .3;
-
-	y1-y6*1;
-	L1*1;
-  L2*1;
+  L1 by y4@.6;
 
 	%Between%
   L4 by y1@1;
-  L4 by y2@.7;
-  L4 by y3@.6;
-  L4 by y4@.8;
-  L4 by y5@.7;
-  L4 by y6@.8;
-	L4*.4;
-	y1-y6@1;
+  L4 by y2@.6;
+  L4 by y3@.9;
+  L4 by y4@.3;
+	!L4*.1;
+	y1-y4@0;
 
-MODEL:
-	
+Model:
 	%Within%
   ! Loadings
   L1 by y1@1;
   L1 by y2@.8;
   L1 by y3@.7;
-  L1 by y5@.3;
-  L2 by y4@1;
-  L2 by y5@.8;
-  L2 by y6@.7;
-  L2 by y2@.3;
-  y2 with y3 @ .3;
-
-	y1-y6*1;
-	L1*1;
-  L2*1;
+  L1 by y4@.6;
 
 	%Between%
   L4 by y1@1;
-  L4 by y2@.7;
-  L4 by y3@.6;
-  L4 by y4@.8;
-  L4 by y5@.7;
-  L4 by y6@.8;
-	L4*.4;
-	y1-y6@1;
+  L4 by y2@.6;
+  L4 by y3@.9;
+  L4 by y4@.3;
+	!L4*.1;
+	y1-y4@0;
+
 
 output:
 	tech8 tech9;
@@ -186,8 +164,8 @@ output:
   # run it
     MplusAutomation::runModels(directory = dataDir)
   # remove
-  file.remove(fileName1)
-  file.remove(fileName2)
+  #file.remove(fileName1)
+  #file.remove(fileName2)
   # remove the list files
   file.remove(list.files(dataDir, pattern = "_list", full.names = TRUE))
 } # end for loop

@@ -2,17 +2,17 @@
 # use even numbers for clusterSize and clusterN
 # simulation will automatically make unbalanced have 
 # half clusters -15 and half +15
-iterationsPer= 500        # number of iterations
-clusterSize  = c(30, 100) # use even numbers
-clusterN     = c(30, 100) # use even numbers
+iterationsPer= 100        # number of iterations
+clusterSize  = c(100) # use even numbers
+clusterN     = c(100) # use even numbers
 clusterBal   = c("bal")   # bal and unbal
-modelSpec    = c("trueModel", "misSpec") # trueModel and misSpec
+modelSpec    = c("trueModel") # trueModel and misSpec
 distribution = c("normal")               # normal and nonNormal
 estimators   = c("FIML", "Goldstein", "Muthen") # FIML, Goldstein, Muthen
 
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/presentationSim"
-makeNewData <- FALSE
+makeNewData <- TRUE
 
 # The models we will use
 # check to make sure these match the data generating models
@@ -31,8 +31,7 @@ l2=~y4+y5+y6
 l1~~l2
 '
 
-# number of iterations
-iterationsPer <- 500
+
 
 #----------------------------------------------------------------------------
 # Should not need to edit below this line

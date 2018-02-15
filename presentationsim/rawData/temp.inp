@@ -1,0 +1,58 @@
+
+! DO NOT EDIT IN TEXT. EDIT IN PRIMARY SIMULATION CODE r FILE. 
+TITLE: Sim
+
+montecarlo:
+names are y1-y4 ;
+nobservations =  1000 ;
+ncsizes =  1 ;
+csizes =  100 (10) !number (size) ;
+seed =  1 ;
+nrep =  100 ;
+repsave = ALL;
+save = bal_100_100_trueModel_normal_*.dat;
+
+ANALYSIS:	
+	TYPE IS twolevel;
+    !ESTIMATOR=BAYES;
+    !estimator = WLS;
+	!distribution = skewnormal;
+
+
+MODEL POPULATION:
+	%Within%
+  ! Loadings
+  L1 by y1@1;
+  L1 by y2@.8;
+  L1 by y3@.7;
+  L1 by y4@.6;
+    ! Variance of the factor?
+    L1@1; 
+    [L1@0];
+    ! variance of errors
+    y1-y4@.5
+
+	%Between%
+  L4 by y1@1;
+  L4 by y2@.6;
+  L4 by y3@.9;
+  L4 by y4@.3;
+  ! Variance of between factor
+  l4@.5;
+  [L4@0];
+
+
+Model:
+	%Within%
+   ! Loadings
+L1 by y1-y4;
+
+	%Between%
+l4 by y1-y4;
+
+	y1-y4@0;
+
+
+output:
+	tech8 tech9;
+
