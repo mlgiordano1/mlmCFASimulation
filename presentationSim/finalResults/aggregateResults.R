@@ -1,5 +1,6 @@
 library(tidyr)
 library(dplyr)
+library(ggplot2)
 
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/presentationsim"
 setwd(baseDir)
@@ -54,8 +55,23 @@ dmLong[dmLong$paramter=="l2.by.y4", "true"] <- 1
 dmLong[dmLong$paramter=="l2.by.y5", "true"] <- .8
 dmLong[dmLong$paramter=="l2.by.y6", "true"] <- .7
 
+# Remove the scaling indicators
+dmLong <- dmLong[which(dmLong$paramter!="l1.by.y1"),]
+dmLong <- dmLong[which(dmLong$paramter!="l2.by.y4"),]
+
+#relative bias
+dmLong$relBias <- (dmLong$est - dmLong$true) / dmLong$true
+
 saved <- dmLong %>%
   group_by(clusterSize, clusterN, clusterBal, modelSpec, estimators, paramter) %>%
   summarize(count = n(),
             mean  = mean(est),
-            true  = mean(true))
+            true  = mean(true),
+            rel.bias = ((est-true)/true))
+
+ggplot(dmLong, aes(x=paramter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterSize~modelSpec) +
+  scale_y_continuous(limits = c(-.5,1))
+
+
