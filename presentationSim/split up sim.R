@@ -2,7 +2,7 @@
 setwd("c:/users/mgiordan/git/mlmcfasimulation/presentationsim")
 # simulation file - this is the file with you general simulation code
 # we are basically only going to replace the parameters of the for loop
-simFile <- "FitModels.R"
+simFile <- "FitModels_misSpec.R"
 totalIter <- 4000      # how many iterations does your simulation have
 divideBy <- 100       # how many files would you like to split it into
 findBy <-  "startingPoint"# what is the character sequence
