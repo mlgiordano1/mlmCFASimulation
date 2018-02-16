@@ -2,10 +2,15 @@ library("lavaan", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 library("MIIVsem", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 library("nlme", lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
 
+library("lavaan")
+library("MIIVsem")
+library("nlme")
+
+
 # set the type to fit
-estimator <- "Goldstein"
-baseDir <- "/nas/longleaf/home/mgiordan/forumPres"
-# baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/forumpres"
+estimator <- "Muthen"
+# baseDir <- "/nas/longleaf/home/mgiordan/forumPres"
+baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/forumpres"
 setwd(baseDir)
 
 
@@ -45,13 +50,13 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
   
   # read in data
   df <- read.table(designMatrix$dfName[[i]])
-  names(df) <- c(paste0("y", 1:6), "cluster")
+  names(df) <- c(paste0("y", 1:4), "cluster")
   df$id <- 1:nrow(df)
   
   fit <- mlcfaMIIV(withinModel = wModel, 
                    betweenModel = bModel, 
                    estimator = designMatrix$estimators[[i]], 
-                   allIndicators = paste0("y", 1:6), 
+                   allIndicators = paste0("y", 1:4), 
                    l1Var = "id", 
                    l2Var = "cluster", 
                    df = df)

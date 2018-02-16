@@ -4,11 +4,11 @@ TITLE: Sim
 
 montecarlo:
 names are y1-y4 ;
-nobservations =  1000 ;
+nobservations =  10000 ;
 ncsizes =  1 ;
-csizes =  100 (10) !number (size) ;
-seed =  1 ;
-nrep =  100 ;
+csizes =  100 (100) !number (size) ;
+seed =  517104352.358729 ;
+nrep =  150 ;
 repsave = ALL;
 save = bal_100_100_trueModel_normal_*.dat;
 
@@ -20,39 +20,66 @@ ANALYSIS:
 
 
 MODEL POPULATION:
-	%Within%
+  %Within%
   ! Loadings
   L1 by y1@1;
-  L1 by y2@.8;
+  L1 by y2@.9;
   L1 by y3@.7;
   L1 by y4@.6;
-    ! Variance of the factor?
-    L1@1; 
-    [L1@0];
-    ! variance of errors
-    y1-y4@.5
+  ! Variance of the factor?
+  !L1@1;
+  L1@2.5; 
+  [L1@0];
+  ! Residual variances of indicators
+  y1@1;
+  y2@1;
+  y3@1;
+  y4@1;
 
-	%Between%
+  %Between%
   L4 by y1@1;
-  L4 by y2@.6;
+  L4 by y2@.7;
   L4 by y3@.9;
-  L4 by y4@.3;
+  L4 by y4@.6;
   ! Variance of between factor
-  l4@.5;
+  L4@.5;
   [L4@0];
+  ! Residual variances of indicators
+  y1@.1;
+  y2@.2;
+  y3@.2;
+  y4@.2;
 
 
 Model:
-	%Within%
-   ! Loadings
-L1 by y1-y4;
+  %Within%
+  ! Loadings
+  L1 by y1*1;
+  L1 by y2*.9;
+  L1 by y3*.7;
+  L1 by y4*.6;
+  ! Variance of the factor?
+  !L1@1;
+  L1*2.5; 
+  [L1*0];
+  ! Residual variances of indicators
+  y1*1;
+  y2*.6;
+  y3*1;
+  y4*.9;
 
-	%Between%
-l4 by y1-y4;
+  %Between%
+  L4 by y1*1;
+  L4 by y2*.7;
+  L4 by y3*.9;
+  L4 by y4*.6;
+  ! Variance of between factor
+  l4*.7;
+  [L4*0];
+  ! Residual variances of indicators
+  y1*.05;
+  y2*.05;
+  y3*.05;
+  y4*.05;
 
-	y1-y4@0;
-
-
-output:
-	tech8 tech9;
 

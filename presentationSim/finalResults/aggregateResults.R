@@ -17,7 +17,7 @@ m$bal_100_100_misspec_normal_fiml1.out$parameters
 dm <- readRDS("SimParams.rds")
 dm <- dm$designMatrix
 
-
+dm <- dm[which(dm$estimators=="Muthen"),]
 
 # go one at a time through the design matrix
 for (i in seq(nrow(dm))) {

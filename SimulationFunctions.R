@@ -49,7 +49,7 @@ createDesignMatrix <- function(nIter,
   return(localMat)
 }
 
-makeDataMplus <- function(wd, iterations, designMatrix) {
+makeDataMplus <- function(wd, iterations, designMatrix, mplusMod) {
   # get unique conditions
   dm <- designMatrix[c("sampleSize",
                        "clusterSize",
@@ -71,7 +71,7 @@ for (i in seq(nrow(dm))) {
 TITLE: Sim
 
 montecarlo:
-names are y1-y6 ;"
+names are y1-y4 ;"
 
 sampleSize <- paste("nobservations = ", dm[i,"sampleSize"], ";")
 if (dm[[i,"clusterBal"]]=="bal") {
@@ -110,45 +110,9 @@ ANALYSIS:
     !ESTIMATOR=BAYES;
     !estimator = WLS;
 	!distribution = skewnormal;
-
-
-MODEL POPULATION:
-
-	%Within%
-  ! Loadings
-  L1 by y1@1;
-  L1 by y2@.8;
-  L1 by y3@.7;
-  L1 by y4@.6;
-
-	%Between%
-  L4 by y1@1;
-  L4 by y2@.6;
-  L4 by y3@.9;
-  L4 by y4@.3;
-	!L4*.1;
-	y1-y4@0;
-
-Model:
-	%Within%
-  ! Loadings
-  L1 by y1@1;
-  L1 by y2@.8;
-  L1 by y3@.7;
-  L1 by y4@.6;
-
-	%Between%
-  L4 by y1@1;
-  L4 by y2@.6;
-  L4 by y3@.9;
-  L4 by y4@.3;
-	!L4*.1;
-	y1-y4@0;
-
-
-output:
-	tech8 tech9;
 "
+
+
 
   # Write data generation input file
   writeLines(c(title,
@@ -159,7 +123,8 @@ output:
              nrep,
              rsave,
              save,
-             theRest),
+             theRest,
+             mplusMod),
             fileName1)
   # run it
     MplusAutomation::runModels(directory = dataDir)
