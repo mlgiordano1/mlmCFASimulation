@@ -49,13 +49,13 @@ createDesignMatrix <- function(nIter,
   return(localMat)
 }
 
-makeDataMplus <- function(wd, iterations, designMatrix) {
+makeDataMplus <- function(mplusModel, wd, iterations, designMatrix) {
   # get unique conditions
   dm <- designMatrix[c("sampleSize",
                        "clusterSize",
                        "clusterN",
                        "clusterBal",
-                       "modelSpec",
+                       # "modelSpec",
                        "distribution")]
   dm <- unique(dm)
   # data directory
@@ -92,7 +92,7 @@ save <- paste("save = ",
               paste(dm[i,"clusterBal"],
                     dm[i,"clusterSize"], 
                     dm[i,"clusterN"],
-                    dm[i,"modelSpec"],
+                    # dm[i,"modelSpec"],
                     dm[i,"distribution"],
                     sep = "_"),
               "_*.dat;",
@@ -110,67 +110,9 @@ ANALYSIS:
     !ESTIMATOR=BAYES;
     !estimator = WLS;
 	!distribution = skewnormal;
-
-
-MODEL POPULATION:
-
-	%Within%
-  ! Loadings
-  L1 by y1@1;
-  L1 by y2@.8;
-  L1 by y3@.7;
-  L1 by y5@.3;
-  L2 by y4@1;
-  L2 by y5@.8;
-  L2 by y6@.7;
-  L2 by y2@.3;
-  y2 with y3 @ .3;
-
-	y1-y6*1;
-	L1*1;
-  L2*1;
-
-	%Between%
-  L4 by y1@1;
-  L4 by y2@.7;
-  L4 by y3@.6;
-  L4 by y4@.8;
-  L4 by y5@.7;
-  L4 by y6@.8;
-	L4*.4;
-	y1-y6@1;
-
-MODEL:
-	
-	%Within%
-  ! Loadings
-  L1 by y1@1;
-  L1 by y2@.8;
-  L1 by y3@.7;
-  L1 by y5@.3;
-  L2 by y4@1;
-  L2 by y5@.8;
-  L2 by y6@.7;
-  L2 by y2@.3;
-  y2 with y3 @ .3;
-
-	y1-y6*1;
-	L1*1;
-  L2*1;
-
-	%Between%
-  L4 by y1@1;
-  L4 by y2@.7;
-  L4 by y3@.6;
-  L4 by y4@.8;
-  L4 by y5@.7;
-  L4 by y6@.8;
-	L4*.4;
-	y1-y6@1;
-
-output:
-	tech8 tech9;
 "
+
+
 
   # Write data generation input file
   writeLines(c(title,
@@ -181,8 +123,9 @@ output:
              nrep,
              rsave,
              save,
-             theRest),
-            fileName1)
+             theRest,
+             mplusModel),
+             fileName1)
   # run it
     MplusAutomation::runModels(directory = dataDir)
   # remove
@@ -274,8 +217,7 @@ mlcfaMIIV <- function(withinModel,
   } else if (tolower(estimator) == "goldstein") {
     # decompose muthen style
     covMats <- decompGoldstein(allIndicators, l1Var, l2Var, df)
-  }
-  else {
+  } else {
     print("incorrect estimator entered")
   }
 
