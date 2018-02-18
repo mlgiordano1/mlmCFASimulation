@@ -1,22 +1,26 @@
 setwd("c:/users/mgiordan/git/mlmcfasimulation/presentationsim")
+simFile  <- "FitModels.R"
+divideBy <- 50       # how many files would you like to split it into
+findBy   <-  "startingPoint"# what is the character sequence
+time     <- "01:00:00" #HH:MM:SS
+
+
 # simulation file - this is the file with you general simulation code
 # we are basically only going to replace the parameters of the for loop
-simFile <- "FitModels.R"
-totalIter <- 4000      # how many iterations does your simulation have
-divideBy <- 100       # how many files would you like to split it into
-findBy <-  "startingPoint"# what is the character sequence
-
-
 #----------------------------------------------------------------------
-closeAllConnections()
+# remove this file before moving forward
 try({file.remove("commands.txt")})
-nPer <- ceiling(totalIter/divideBy) # the number of iterations per
-lines <- readLines(simFile)         # read the primary simulation file. 
+
+# read in the designMatrix to determine number of iterations per estimator
+dm <- readRDS("simparams.rds")
+totalIter <- nrow(dm$designMatrix)/3 # how many iterations does your simulation have
+nPer <- ceiling(totalIter/divideBy)  # the number of iterations per
+lines <- readLines(simFile)          # read the primary simulation file. 
 lineToReplace <- grep(findBy, lines)
+
 # decide which estimator
 if (any(grepl("Muthen", lines))) {
   est <- "muthen"
-
 }
 if (any(grepl("Goldstein", lines))) {
   est <- "goldstein"
@@ -29,7 +33,7 @@ a2 <- paste0("#SBATCH --job-name=", est)
 a3 <- "#SBATCH --ntasks=1"
 a4 <- "#SBATCH --cpus-per-task=1"
 a5 <- "#SBATCH --ntasks-per-node=1"
-a6 <- "#SBATCH --time=05:00:00"     #HH:MM:SS
+a6 <- paste0("#SBATCH --time=", time) 
 a7 <- "#SBATCH --mem-per-cpu=1024"
 a8 <- "srun R CMD BATCH --no-save "
 
