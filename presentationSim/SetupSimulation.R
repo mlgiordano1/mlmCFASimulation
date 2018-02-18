@@ -3,11 +3,13 @@
 # simulation will automatically make unbalanced have 
 # half clusters -15 and half +15
 iterationsPer= 500        # number of iterations
+# between cell factors
 clusterSize  = c(30, 100) # use even numbers
 clusterN     = c(30, 100) # use even numbers
-clusterBal   = c("bal")   # bal and unbal
-modelSpec    = c("trueModel", "misSpec") # trueModel and misSpec
 distribution = c("normal")               # normal and nonNormal
+clusterBal   = c("bal")   # bal and unbal
+# Within cell factors
+modelSpec    = c("trueModel", "misSpec", "misSpec1", "misSpec2", "misSpec3") # trueModel and misSpec
 estimators   = c("FIML", "Goldstein", "Muthen") # FIML, Goldstein, Muthen
 
 # Create a base directory on your own
@@ -31,8 +33,85 @@ l2=~y4+y5+y6
 l1~~l2
 '
 
-# number of iterations
-iterationsPer <- 500
+wModelMis1 <- '
+l1=~y1+y2+y3
+l2=~y4+y5+y6+y2
+y2~~y3
+l1~~l2
+'
+
+wModelMis2 <- '
+l1=~y1+y2+y3+y5
+l2=~y4+y5+y6
+y2~~y3
+l1~~l2
+'
+
+wModelMis3 <- '
+l1=~y1+y2+y3+y5
+l2=~y4+y5+y6+y2
+l1~~l2
+'
+
+mPlusModelStatement <- "
+MODEL POPULATION:
+	%Within%
+  ! Loadings
+  L1 by y1@1;
+  L1 by y2@.8;
+  L1 by y3@.7;
+  L1 by y5@.3;
+  L2 by y4@1;
+  L2 by y5@.8;
+  L2 by y6@.7;
+  L2 by y2@.3;
+  y2 with y3 @ .3;
+
+	y1-y6*.8;
+	L1*2;
+  L2*2;
+
+	%Between%
+  L4 by y1@1;
+  L4 by y2@.7;
+  L4 by y3@.6;
+  L4 by y4@.8;
+  L4 by y5@.7;
+  L4 by y6@.8;
+	L4*.5;
+	y1-y6@.2;
+
+MODEL:
+	
+	%Within%
+  ! Loadings
+  L1 by y1*1;
+  L1 by y2*.8;
+  L1 by y3*.7;
+  L1 by y5*.3;
+  L2 by y4*1;
+  L2 by y5*.8;
+  L2 by y6*.7;
+  L2 by y2*.3;
+  y2 with y3 * .3;
+
+	y1-y6*.8;
+	L1*2;
+  L2*2;
+
+	%Between%
+  L4 by y1*1;
+  L4 by y2*.7;
+  L4 by y3*.6;
+  L4 by y4*.8;
+  L4 by y5*.7;
+  L4 by y6*.8;
+	L4*.5;
+	y1-y6*.2;
+
+output:
+	tech8 tech9;
+"
 
 #----------------------------------------------------------------------------
 # Should not need to edit below this line
@@ -86,12 +165,12 @@ designMatrix <- merge(designMatrix, temp)
 
 # compute sample size
 designMatrix$sampleSize <- designMatrix$clusterSize*designMatrix$clusterN
- # make DF names
+# make DF names
 designMatrix$dfName <- paste0(dataDir, "/",
                               designMatrix$clusterBal, "_",
                               designMatrix$clusterSize, "_",
                               designMatrix$clusterN, "_",
-                              designMatrix$modelSpec, "_",
+                              # designMatrix$modelSpec, "_",
                               designMatrix$distribution, "_",
                               designMatrix$Iteration,
                               ".dat")
@@ -100,24 +179,40 @@ designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$clusterBal, "_",
                               designMatrix$clusterSize, "_",
                               designMatrix$clusterN, "_",
-                              designMatrix$modelSpec, "_",
                               designMatrix$distribution, "_",
                               designMatrix$estimators,
+                              designMatrix$modelSpec, "_",
                               designMatrix$Iteration,
                               ".rds")
+
+#make inp name
+designMatrix$inpName <- paste0(fitModelDir, "/",
+                              designMatrix$clusterBal, "_",
+                              designMatrix$clusterSize, "_",
+                              designMatrix$clusterN, "_",
+                              designMatrix$modelSpec, "_",
+                              designMatrix$distribution, "_",
+                              designMatrix$estimators, "_",
+                              designMatrix$Iteration,
+                              ".inp")
 # create data based on design matrix
 if (makeNewData==TRUE) {
-  makeDataMplus(wd = baseDir,
-                iterations = iterationsPer,
+  makeDataMplus(mplusModel   = mPlusModelStatement,
+                wd           = baseDir,
+                iterations   = iterationsPer,
                 designMatrix = designMatrix)
 }
 
 #save Models
-saveRDS(list(designMatrix = designMatrix,
+saveRDS(list(designMatrix  = designMatrix,
              iterationsPer = iterationsPer,
-             bModelTrue = bModelTrue, 
-             wModelTrue = wModelTrue,
-             wModelMis  = wModelMis), "SimParams.rds")
+             bModelTrue    = bModelTrue, 
+             wModelTrue    = wModelTrue,
+             wModelMis     = wModelMis,
+             wModelMis1    = wModelMis1,
+             wModelMis2    = wModelMis2,
+             wModelMis3    = wModelMis3,
+             mplusModel    = mPlusModelStatement), "SimParams.rds")
 
  
 
