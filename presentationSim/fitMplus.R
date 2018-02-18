@@ -3,7 +3,7 @@ setwd(baseDir)
 
 
 mplusBModel <-'
-  L4 by y1*1;
+  L4 by y1@1;
   L4 by y2*.7;
   L4 by y3*.6;
   L4 by y4*.8;
@@ -14,11 +14,11 @@ mplusBModel <-'
 '
 
 mpluswModelTrue <- '
-  L1 by y1*1;
+  L1 by y1@1;
   L1 by y2*.8;
   L1 by y3*.7;
   L1 by y5*.3;
-  L2 by y4*1;
+  L2 by y4@1;
   L2 by y5*.8;
   L2 by y6*.7;
   L2 by y2*.3;
@@ -29,11 +29,11 @@ mpluswModelTrue <- '
   L2*2;
 '
 mpluswModelMis <- '
-  L1 by y1*1;
+  L1 by y1@1;
   L1 by y2*.8;
   L1 by y3*.7;
   ! L1 by y5*.3;
-  L2 by y4*1;
+  L2 by y4@1;
   L2 by y5*.8;
   L2 by y6*.7;
   ! L2 by y2*.3;
@@ -44,11 +44,11 @@ mpluswModelMis <- '
   L2*2;
 '
 mpluswModelMis1 <- '
-  L1 by y1*1;
+  L1 by y1@1;
   L1 by y2*.8;
   L1 by y3*.7;
   ! L1 by y5*.3;
-  L2 by y4*1;
+  L2 by y4@1;
   L2 by y5*.8;
   L2 by y6*.7;
   L2 by y2*.3;
@@ -59,11 +59,11 @@ mpluswModelMis1 <- '
   L2*2;
 '
 mpluswModelMis2 <- '
-  L1 by y1*1;
+  L1 by y1@1;
   L1 by y2*.8;
   L1 by y3*.7;
   L1 by y5*.3;
-  L2 by y4*1;
+  L2 by y4@1;
   L2 by y5*.8;
   L2 by y6*.7;
   ! L2 by y2*.3;
@@ -74,11 +74,11 @@ mpluswModelMis2 <- '
   L2*2;
 '
 mpluswModelMis3 <- '
-  L1 by y1*1;
+  L1 by y1@1;
   L1 by y2*.8;
   L1 by y3*.7;
   L1 by y5*.3;
-  L2 by y4*1;
+  L2 by y4@1;
   L2 by y5*.8;
   L2 by y6*.7;
   L2 by y2*.3;
