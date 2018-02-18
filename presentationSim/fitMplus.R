@@ -3,36 +3,90 @@ setwd(baseDir)
 
 
 mplusBModel <-'
-l3 by y1-y6;
+  L4 by y1*1;
+  L4 by y2*.7;
+  L4 by y3*.6;
+  L4 by y4*.8;
+  L4 by y5*.7;
+  L4 by y6*.8;
+	L4*.5;
+	y1-y6*.2;
 '
 
 mpluswModelTrue <- '
-l1 by y1-y3 y5;
-l2 by y4-y6 y2;
-y2 with y3;
-l1 with l2;
+  L1 by y1*1;
+  L1 by y2*.8;
+  L1 by y3*.7;
+  L1 by y5*.3;
+  L2 by y4*1;
+  L2 by y5*.8;
+  L2 by y6*.7;
+  L2 by y2*.3;
+  y2 with y3 * .3;
+
+	y1-y6*.8;
+	L1*2;
+  L2*2;
 '
 mpluswModelMis <- '
-l1 by y1-y3;
-l2 by y4-y6;
+  L1 by y1*1;
+  L1 by y2*.8;
+  L1 by y3*.7;
+  ! L1 by y5*.3;
+  L2 by y4*1;
+  L2 by y5*.8;
+  L2 by y6*.7;
+  ! L2 by y2*.3;
+  ! y2 with y3 * .3;
+
+	y1-y6*.8;
+	L1*2;
+  L2*2;
 '
 mpluswModelMis1 <- '
-l1 by y1-y3
-l2 by y4-y6 y2;
-y2 with y3;
-l1 with l2;
+  L1 by y1*1;
+  L1 by y2*.8;
+  L1 by y3*.7;
+  ! L1 by y5*.3;
+  L2 by y4*1;
+  L2 by y5*.8;
+  L2 by y6*.7;
+  L2 by y2*.3;
+  y2 with y3 * .3;
+
+	y1-y6*.8;
+	L1*2;
+  L2*2;
 '
 mpluswModelMis2 <- '
-l1 by y1-y3 y5;
-l2 by y4-y6
-y2 with y3;
-l1 with l2;
+  L1 by y1*1;
+  L1 by y2*.8;
+  L1 by y3*.7;
+  L1 by y5*.3;
+  L2 by y4*1;
+  L2 by y5*.8;
+  L2 by y6*.7;
+  ! L2 by y2*.3;
+  y2 with y3 * .3;
+
+	y1-y6*.8;
+	L1*2;
+  L2*2;
 '
 mpluswModelMis3 <- '
-l1 by y1-y3 y5;
-l2 by y4-y6 y2;
-! missing correlated error
-l1 with l2;
+  L1 by y1*1;
+  L1 by y2*.8;
+  L1 by y3*.7;
+  L1 by y5*.3;
+  L2 by y4*1;
+  L2 by y5*.8;
+  L2 by y6*.7;
+  L2 by y2*.3;
+  ! y2 with y3 * .3;
+
+	y1-y6*.8;
+	L1*2;
+  L2*2;
 '
 
 # reading in the parameters of the model
