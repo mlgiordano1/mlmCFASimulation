@@ -180,7 +180,7 @@ designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$clusterSize, "_",
                               designMatrix$clusterN, "_",
                               designMatrix$distribution, "_",
-                              designMatrix$estimators,
+                              designMatrix$estimators, "_",
                               designMatrix$modelSpec, "_",
                               designMatrix$Iteration,
                               ".rds")

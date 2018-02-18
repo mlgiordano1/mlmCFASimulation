@@ -1,5 +1,5 @@
 # set the type to fit
-estimator <- "Muthen"
+estimator <- "Goldstein"
 # set the working director
 try({
   baseDir <- "/nas/longleaf/home/mgiordan/forumPres"

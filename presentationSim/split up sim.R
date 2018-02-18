@@ -1,8 +1,8 @@
 setwd("c:/users/mgiordan/git/mlmcfasimulation/presentationsim")
 simFile  <- "FitModels.R"
-divideBy <- 50       # how many files would you like to split it into
+divideBy <- 100       # how many files would you like to split it into
 findBy   <-  "startingPoint"# what is the character sequence
-time     <- "01:00:00" #HH:MM:SS
+time     <- "05:00:00" #HH:MM:SS  # note 200 muthen models can be run in minutes
 
 
 # simulation file - this is the file with you general simulation code
@@ -37,7 +37,7 @@ a6 <- paste0("#SBATCH --time=", time)
 a7 <- "#SBATCH --mem-per-cpu=1024"
 a8 <- "srun R CMD BATCH --no-save "
 
-cat("module load -r\n", file = "commands.txt", append = TRUE )
+cat("module add r\n", file = "commands.txt", append = TRUE )
 cat("module list\n", file = "commands.txt", append = TRUE )
 start1 <- 1
 stop1 <- nPer
