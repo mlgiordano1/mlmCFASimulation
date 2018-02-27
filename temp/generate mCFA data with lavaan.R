@@ -1,6 +1,8 @@
 library("lavaan")
 source('simulationfunctions.r')
 
+install.packages('plot3D')
+library("plot3D")
 bModel <- '
 l1 =~ y1+y2+y3+y4
 '
@@ -40,7 +42,7 @@ names(dfB) <- paste0(names(dfB), "b")
 # summary(fit)
 
 # create within Data
-dfW <- simulateData(model = wSimModel, model.type = 'cfa', sample.nobs = 10000)
+dfW <- simulateData(model = wSimModel, model.type = 'cfa', sample.nobs = 10000, skewness = 5)
 names(dfW) <- paste0(names(dfW), "w")
 df <- cbind(dfW, dfB,
             cluster = 1:100,
