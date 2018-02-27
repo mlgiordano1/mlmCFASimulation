@@ -95,9 +95,9 @@ saved <- dmLong %>%
             true  = mean(true),
             rel.bias = ((est-true)/true))
 
+# pulling just the within parameters
 within <- c("l1.by.y2", "l1.by.y3", "l2.by.y5", "l2.by.y6")
 within <- dmLong[dmLong$paramter %in% within,]
-
 # want to drop some misSpec Conditions
 within <- within[!(within$modelSpec %in% "misSpec"),]
 within <- within[!(within$modelSpec %in% "misSpec1"),]
@@ -107,6 +107,19 @@ within[which(within$modelSpec=="misSpec2"), "modelSpec"] <- "Missing L2 to Y2"
 within[which(within$modelSpec=="misSpec3"), "modelSpec"] <- "msg corr err"
 # re-ordering factors
 within$modelSpec <- factor(within$modelSpec, levels(factor(within$modelSpec))[c(3,1:2)])
+
+# pulling just the within parameters
+between <- c("LB.by.y2", "LB.by.y3","LB.by.y4", "LB.by.y5", "LB.by.y6")
+between <- dmLong[dmLong$paramter %in% between,]
+# want to drop some misSpec Conditions
+between <- between[!(between$modelSpec %in% "misSpec"),]
+between <- between[!(between$modelSpec %in% "misSpec1"),]
+# do some renaming
+between[which(between$modelSpec=="misSpec1"), "modelSpec"] <- "Missing L1 to Y5"
+between[which(between$modelSpec=="misSpec2"), "modelSpec"] <- "Missing L2 to Y2"
+between[which(between$modelSpec=="misSpec3"), "modelSpec"] <- "msg corr err"
+# re-ordering factors
+between$modelSpec <- factor(between$modelSpec, levels(factor(between$modelSpec))[c(3,1:2)])
 
 ggplot(within, aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
@@ -153,38 +166,50 @@ ggplot(within[which(within$modelSpec=="msg corr err"),], aes(x=paramter, y = rel
 ggsave("finalResults/Within Missing Correlated Error.jpeg")
 
 
-p1 <- ggplot(within[which(within$modelSpec=="trueModel"),], aes(x=paramter, y = relBias, fill = estimators)) +
+ggplot(between, aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(modelSpec~clusterSize) +
+  facet_grid(~modelSpec) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2))
-ggsave("finalResults/withinTrue.jpeg")
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("between: All 3 specifications")
+ggsave("finalResults/between All 3 specifications.jpeg")
 
-p2 <- ggplot(within[which(within$modelSpec=="Missing L2 to Y2"),], aes(x=paramter, y = relBias, fill = estimators)) +
+ggplot(between[which(between$modelSpec=="trueModel"),], aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(modelSpec~clusterSize) +
+  #facet_grid(~modelSpec) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2))
-ggsave("finalResults/withinMisspec1.jpeg")
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("between: True Model")
+ggsave("finalResults/between True Model.jpeg")
 
-ggplot(dmLong[which(dmLong$modelSpec=="misSpec2"),], aes(x=paramter, y = relBias, fill = estimators)) +
+ggplot(between[which(between$modelSpec=="Missing L2 to Y2"),], aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(modelSpec~clusterSize) +
+  #facet_grid(~modelSpec) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-  scale_y_continuous(limits = c(-.5,1))
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("between: Missing Cross Loading")
+ggsave("finalResults/between Missing Cross Loading.jpeg")
 
-ggplot(dmLong[which(dmLong$modelSpec=="misSpec3"),], aes(x=paramter, y = relBias, fill = estimators)) +
+ggplot(between[which(between$modelSpec=="msg corr err"),], aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(modelSpec~clusterSize) +
+  #facet_grid(~modelSpec) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
-  scale_y_continuous(limits = c(-.5,1))
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("between: Missing Correlated Error")
+ggsave("finalResults/between Missing Correlated Error.jpeg")
+
 
 
 
