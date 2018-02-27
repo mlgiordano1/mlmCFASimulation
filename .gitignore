@@ -1,3 +1,10 @@
 *.dat
 *.log
-*.rds      # exclude .rds files
+*.rds    
+*.inp
+*.out
+
+
+presentationSim/savedModels/savedModels/
+
+presentationSim/savedModels/
