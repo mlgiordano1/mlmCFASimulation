@@ -14,5 +14,5 @@ for (i in c(1, 304, 657)) {
   print(psych::describe(df))
 }
 
-
+install.packages('lavaan')
 

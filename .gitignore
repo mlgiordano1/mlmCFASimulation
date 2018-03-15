@@ -8,6 +8,10 @@
 
 *.rds
 
+!seeds.rds
+
 presentationSim/savedModels/savedModels/
 
 presentationSim/savedModels/
+
+
