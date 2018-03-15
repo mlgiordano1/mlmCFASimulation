@@ -12,3 +12,8 @@ bModelTrue    <- simParams$bModelTrue
 
 i=300
 print(designMatrix$seed[i])
+df <- readRDS(designMatrix$dfName[i])
+mean(df$y1)
+mean(df$y2)
+mean(df$y3)
+mean(df$y4)
