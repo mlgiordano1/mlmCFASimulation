@@ -73,9 +73,7 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
   }
   
   # read in data
-  df <- read.table(designMatrix$dfName[[i]])
-  names(df) <- c(paste0("y", 1:6), "cluster")
-  df$id <- 1:nrow(df)
+  df <- readRDS(designMatrix$dfName[[i]])
   
   fit <- tryCatch({
     mlcfaMIIV(withinModel   = wModel, 

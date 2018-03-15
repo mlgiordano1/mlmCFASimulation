@@ -9,10 +9,6 @@ wModelMis2    <- simParams$wModelMis2
 wModelMis3    <- simParams$wModelMis3
 bModelTrue    <- simParams$bModelTrue
 
-for (i in c(1, 304, 657)) {
-  df <- readRDS(designMatrix$dfName[i])
-  print(psych::describe(df))
-}
 
-install.packages('lavaan')
-
+i=300
+print(designMatrix$seed[i])
