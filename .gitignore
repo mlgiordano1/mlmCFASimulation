@@ -1,9 +1,12 @@
 *.dat
+
 *.log
-*.rds    
+   
 *.inp
+
 *.out
 
+*.rds
 
 presentationSim/savedModels/savedModels/
 
