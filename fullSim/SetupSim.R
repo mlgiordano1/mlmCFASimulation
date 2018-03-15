@@ -19,7 +19,7 @@ estimators   = c("FIML", "Muthen") # FIML, Goldstein, Muthen
 
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
-makeNewData <- TRUE
+makeNewData <- FALSE
 
 # The data generating models
 bGenModel <- '
