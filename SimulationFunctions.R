@@ -247,8 +247,8 @@ mlcfaMIIV <- function(withinModel,
                       sample.cov = covMats[["between"]],
                       sample.nobs = g,
                       var.cov = TRUE, 
-                      overid.degree = 2, 
-                      overid.method = "partial.R2")
+                      overid.degree = 1, 
+                      overid.method = "random")
   # return the list of within and between models
   return(list(within=w, between=b))
 } # end function
@@ -455,6 +455,67 @@ for (i in seq(indicatorNames)) {
 df <- df[, c("id", "cluster", indicatorNames)]
 
 return(df)
+}
+
+simData2 <- function(indicatorNames,
+                     wLambda,
+                     wPsi,
+                     wTheta,
+                     bLambda,
+                     bPsi,
+                     bTheta,
+                     clusterNo,
+                     clusterSize,
+                     wSkew = 0,
+                     wKurt = 0,
+                     bSkew = 0,
+                     bKurt = 0,
+                     clusterBal = TRUE,
+                     seed = sample(1:1000000, 1)) {
+  # save indicator names
+  inb <- paste0(indicatorNames, "b")
+  inw <- paste0(indicatorNames, "w")
+  # create the implied covariance matrices
+  wCov <- wLambda%*%wPsi%*%t(wLambda) + wTheta
+  bCov <- bLambda%*%bPsi%*%t(bLambda) + bTheta
+  # simulate within data
+  dfW <- semTools::mvrnonnorm(n        = clusterNo*clusterSize, 
+                              mu       = rep(0, length(indicatorNames)), 
+                              Sigma    = wCov, 
+                              skewness = wSkew, 
+                              kurtosis = wKurt)
+  colnames(dfW) <- inw
+  # simulate between data
+  dfB <- semTools::mvrnonnorm(n        = clusterNo, 
+                              mu       = rep(0, length(indicatorNames)), 
+                              Sigma    = bCov, 
+                              skewness = bSkew, 
+                              kurtosis = bKurt)
+  colnames(dfB) <- inb
+  # make vector of ids
+  id <- 1:(clusterNo*clusterSize)
+  # make vector of clusters
+  if (clusterBal==TRUE) {
+    cluster <- rep(1:clusterNo, clusterSize)
+  } else {
+    cluster <- c(rep(1:(clusterNo/2), clusterSize-15),
+                 rep(((clusterNo/2)+1):clusterNo, clusterSize+15))
+  }
+  dfw <- as.data.frame(dfW)
+  dfB <- as.data.frame(dfB)
+  df <- cbind(dfW, dfB,
+              cluster,
+              id)
+  # make df a dataframe
+  df <- as.data.frame(df)
+  # create new vars
+  for (i in seq(indicatorNames)) {
+    df[, indicatorNames[i]] <- df[, inw[i]] + df[, inb[i]]
+  }
+  # subset just the vars we want
+  df <- df[, c("id", "cluster", indicatorNames)]
+  
+  return(df)
 }
 
 
