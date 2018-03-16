@@ -1,3 +1,4 @@
+rm(list=ls())
 # reading in the parameters of the model
 simParams     <- readRDS("SimParams.rds")
 designMatrix  <- simParams$designMatrix
@@ -10,10 +11,13 @@ wModelMis3    <- simParams$wModelMis3
 bModelTrue    <- simParams$bModelTrue
 
 
-i=300
+i=7
 print(designMatrix$seed[i])
+designMatrix$wSkew[i]
 df <- readRDS(designMatrix$dfName[i])
 mean(df$y1)
 mean(df$y2)
 mean(df$y3)
 mean(df$y4)
+
+hist(df$y1)

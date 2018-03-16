@@ -1,3 +1,4 @@
+rm(list=ls())
 # factors for the simulation:
 # use even numbers for clusterSize and clusterN
 # simulation will automatically make unbalanced have half clusters -15 and half +15
@@ -7,7 +8,6 @@ clusterSize  = c(100)     # use even numbers
 clusterN     = c(100)     # use even numbers
 clusterBal   = c("bal")   # bal and unbal
 distribution = c("normal")               # normal and nonNormal
-
 wSkew        = c(0, 2)
 wKurt        = c(0, 3)
 bSkew        = c(0, 2)
@@ -47,6 +47,19 @@ l1~~2*l1
 l2~~2*l2
 l1~~.3*l2
 '
+# The data generating matrices for using SemTools
+wLambda        = matrix(data = c(1, .8, .7, 0, .3, 0, 0, .3, 0, 1, .8, .7), 
+                        nrow = 6, byrow = FALSE)
+wPsi           = matrix(c(2, .3, .3, 2), nrow = 2, byrow = FALSE)
+wTheta         = matrix(0, nrow = 6, ncol = 6)
+diag(wTheta)   = .8
+wTheta[2, 3]   = .3
+wTheta[3, 2]   = .3
+bLambda        = matrix(data = c(1, .7, .6, .8, .7, .8), 
+                        nrow = 6, byrow = FALSE)
+bPsi           = matrix(c(.5), nrow = 1, byrow = FALSE)
+bTheta         = matrix(0, nrow = 6, ncol = 6)
+diag(bTheta)   = .2
 
 
 # the data fitting models
@@ -199,9 +212,14 @@ if (makeNewData==TRUE) {
     } else {
       bal <- FALSE
     }
-    df <- simData(indicatorNames = paste0("y", 1:6),
-                  withinModel    = wGenModel, 
-                  betweenModel   = bGenModel, 
+    set.seed(btwCell$seed[i])
+    df <- simData2(indicatorNames = paste0("y", 1:6),
+                   wLambda       = wLambda,
+                   wPsi          = wPsi,
+                   wTheta        = wTheta,
+                   bLambda       = bLambda,
+                   bPsi          = bPsi,
+                   bTheta        = bTheta,
                   clusterNo      = btwCell$clusterN[i],
                   clusterSize    = btwCell$clusterSize[i],
                   wSkew          = btwCell$wSkew[i],
@@ -228,5 +246,3 @@ saveRDS(list(designMatrix  = designMatrix,
              "SimParams.rds")
 
  
-
-

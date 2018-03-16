@@ -127,15 +127,15 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
   }
   
   # read in df
-  #df <- readRDS(designMatrix$dfName[i])
+  df <- readRDS(designMatrix$dfName[i])
   n <-  paste0(substr(designMatrix$dfName[i],
    start = 0,
    stop = nchar(designMatrix$dfName[i])-3),
    "dat")
   # output df for Mplus
   # invisible(capture.output(MplusAutomation::prepareMplusData(df, n)))
-  #write.table(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
-  # data.table::fwrite(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  # write.table(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  data.table::fwrite(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
   # write inp file
   writeLines(c('TITLE:	"This is my Title"',
                paste0('DATA: FILE = \'../', n, "';"),

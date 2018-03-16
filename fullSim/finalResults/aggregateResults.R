@@ -7,8 +7,8 @@ library(stringr)
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
 
-# allMplusModels <- MplusAutomation::readModels("savedModels")
-# saveRDS(allMplusModels, "savedModels/allMplusModels.rds")
+allMplusModels <- MplusAutomation::readModels("savedModels")
+saveRDS(allMplusModels, "savedModels/allMplusModels.rds")
 m <- readRDS("savedModels/allMplusModels.rds")
 
 # read in the design matrix
@@ -58,7 +58,7 @@ for (i in seq(nrow(dm))) {
   })# end of try
 } # end for loop
 
-saveRDS(dm, "savedModels/results.rds")
+saveRDS(dm, "finalResults/results.rds")
 dm <- readRDS("finalResults/results.rds")
 
 dmLong <- gather(dm, paramter, est, l1.by.y1:LB.by.y6, factor_key = TRUE) 
