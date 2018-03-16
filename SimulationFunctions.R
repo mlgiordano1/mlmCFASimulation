@@ -246,7 +246,9 @@ mlcfaMIIV <- function(withinModel,
   b <- MIIVsem::miive(betweenModel,
                       sample.cov = covMats[["between"]],
                       sample.nobs = g,
-                      var.cov = TRUE)
+                      var.cov = TRUE, 
+                      overid.degree = 2, 
+                      overid.method = "partial.R2")
   # return the list of within and between models
   return(list(within=w, between=b))
 } # end function

@@ -1,3 +1,4 @@
+rm(list=ls())
 library(tidyr)
 library(dplyr)
 library(ggplot2)
@@ -6,7 +7,7 @@ library(stringr)
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
 
-allMplusModels <- MplusAutomation::readModels("savedModels")
+# allMplusModels <- MplusAutomation::readModels("savedModels")
 # saveRDS(allMplusModels, "savedModels/allMplusModels.rds")
 m <- readRDS("savedModels/allMplusModels.rds")
 
@@ -19,13 +20,8 @@ for (i in seq(nrow(dm))) {
   print(i)
   try({
   if (dm$estimators[i]=="FIML") {
-  mName <- paste0(tolower(paste(dm$clusterBal[i], 
-                   dm$clusterSize[i], 
-                    dm$clusterN[i], 
-                    dm$modelSpec[i], 
-                    dm$distribution[i], 
-                    dm$estimators[i], 
-                    dm$Iteration[i], sep = "_")), ".out")
+    
+  mName <- paste0("X", tolower(substr(dm$inpName[i], start= 13, stop = nchar(dm$inpName[i])-3)), "out")
   mod <- m[[mName]]
   param <- mod[["parameters"]][["unstandardized"]]
   param$name <- paste0(param$paramHeader, param$param)
@@ -65,7 +61,7 @@ for (i in seq(nrow(dm))) {
 saveRDS(dm, "savedModels/results.rds")
 dm <- readRDS("finalResults/results.rds")
 
-dmLong <- gather(dm, paramter, est, l1.by.y2:LB.by.y6, factor_key = TRUE) 
+dmLong <- gather(dm, paramter, est, l1.by.y1:LB.by.y6, factor_key = TRUE) 
 
 # put in the true values
 dmLong[dmLong$paramter=="l1.by.y1", "true"] <- 1
@@ -169,7 +165,7 @@ ggsave("finalResults/Within Missing Correlated Error.jpeg")
 
 ggplot(between, aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(~modelSpec) +
+  facet_grid(~bSkew) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +

@@ -1,3 +1,4 @@
+rm(list=ls())
 # set the type to fit
 estimator <- "Muthen"
 # set the working director

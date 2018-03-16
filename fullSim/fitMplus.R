@@ -1,3 +1,5 @@
+rm(list = ls())
+
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
 
@@ -105,6 +107,7 @@ bModelTrue    <- simParams$bModelTrue
 designMatrix <- designMatrix[which(designMatrix$estimators=="FIML"),]
 
 for (i in seq(nrow(designMatrix))) { # startingPoint!
+  print(paste0(i, "/", nrow(designMatrix)))
   # Save the model we will be using
   if (designMatrix$modelSpec[i] == "trueModel") {
     wModel <- mpluswModelTrue
@@ -123,17 +126,31 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
     bModel <- mplusBModel
   }
   
+  # read in df
+  #df <- readRDS(designMatrix$dfName[i])
+  n <-  paste0(substr(designMatrix$dfName[i],
+   start = 0,
+   stop = nchar(designMatrix$dfName[i])-3),
+   "dat")
+  # output df for Mplus
+  # invisible(capture.output(MplusAutomation::prepareMplusData(df, n)))
+  #write.table(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  # data.table::fwrite(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  # write inp file
   writeLines(c('TITLE:	"This is my Title"',
-                 paste0("Data: file is ../", designMatrix$dfName[i], ";"),
-                 "VARIABLE:	NAMES ARE y1-y6 clust;",
-                 "Cluster = Clust",
+               paste0('DATA: FILE = \'../', n, "';"),
+               'Variable: NAMES ARE id cluster y1 y2 y3 y4 y5 y6;',
+                'USEVARIABLE = cluster y1 y2 y3 y4 y5 y6;',
+               'MISSING=.;',
+                 "Cluster = Cluster",
                  "ANALYSIS:	TYPE = TWOLEVEL;",
                  "Model:",
                  "%within%",
                  wModel,
                  "%BETWEEN%",
                  bModel),
-              con = designMatrix$inpName[i])
+                 con = designMatrix$inpName[i])
 }
 
-# MplusAutomation::runModels("./savedModels" )
+setwd("./savedModels" )
+MplusAutomation::runModels()
