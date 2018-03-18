@@ -497,9 +497,7 @@ simData2 <- function(indicatorNames,
   if (bSkew==0&bKurt==0) {
     dfB <- MASS::mvrnorm(n        = clusterNo, 
                          mu       = rep(0, length(indicatorNames)), 
-                         Sigma    = bCov, 
-                         skewness = bSkew, 
-                         kurtosis = bKurt) 
+                         Sigma    = bCov) 
   } else {
     dfB <- semTools::mvrnonnorm(n        = clusterNo, 
                                 mu       = rep(0, length(indicatorNames)), 
