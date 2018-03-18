@@ -478,19 +478,37 @@ simData2 <- function(indicatorNames,
   # create the implied covariance matrices
   wCov <- wLambda%*%wPsi%*%t(wLambda) + wTheta
   bCov <- bLambda%*%bPsi%*%t(bLambda) + bTheta
-  # simulate within data
-  dfW <- semTools::mvrnonnorm(n        = clusterNo*clusterSize, 
-                              mu       = rep(0, length(indicatorNames)), 
-                              Sigma    = wCov, 
-                              skewness = wSkew, 
-                              kurtosis = wKurt)
+  
+  # Generate the within data
+  # if no skew or kurtosis specified for within use mass::mvrnorm
+  if (wSkew==0&wKurt==0) {
+    dfW <- MASS::mvrnorm(n        = clusterNo*clusterSize, 
+                         mu       = rep(0, length(indicatorNames)), 
+                         Sigma    = wCov)
+  } else { 
+    # if skew or kurtosis is in the model, use semTools::mvrnonnorm
+    dfW <- semTools::mvrnonnorm(n        = clusterNo*clusterSize, 
+                                mu       = rep(0, length(indicatorNames)), 
+                                Sigma    = wCov, 
+                                skewness = wSkew, 
+                                kurtosis = wKurt)
+  }
+  # generate the between
+  if (bSkew==0&bKurt==0) {
+    dfB <- MASS::mvrnorm(n        = clusterNo, 
+                         mu       = rep(0, length(indicatorNames)), 
+                         Sigma    = bCov, 
+                         skewness = bSkew, 
+                         kurtosis = bKurt) 
+  } else {
+    dfB <- semTools::mvrnonnorm(n        = clusterNo, 
+                                mu       = rep(0, length(indicatorNames)), 
+                                Sigma    = bCov, 
+                                skewness = bSkew, 
+                                kurtosis = bKurt)
+  }
+  # adding column names
   colnames(dfW) <- inw
-  # simulate between data
-  dfB <- semTools::mvrnonnorm(n        = clusterNo, 
-                              mu       = rep(0, length(indicatorNames)), 
-                              Sigma    = bCov, 
-                              skewness = bSkew, 
-                              kurtosis = bKurt)
   colnames(dfB) <- inb
   # make vector of ids
   id <- 1:(clusterNo*clusterSize)
