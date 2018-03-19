@@ -61,6 +61,9 @@ for (i in seq(nrow(dm))) {
 saveRDS(dm, "finalResults/results.rds")
 dm <- readRDS("finalResults/results.rds")
 
+# make a single skew condition var
+dm$skewKurt <- paste0(dm$wSkew, dm$wKurt, dm$bSkew, dm$bKurt)
+
 dmLong <- gather(dm, paramter, est, l1.by.y1:LB.by.y6, factor_key = TRUE) 
 
 # put in the true values
@@ -120,7 +123,7 @@ between$modelSpec <- factor(between$modelSpec, levels(factor(between$modelSpec))
 
 ggplot(within, aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(~wSkew) +
+  facet_grid(~skewKurt) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -165,7 +168,7 @@ ggsave("finalResults/Within Missing Correlated Error.jpeg")
 
 ggplot(between, aes(x=paramter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(~bSkew) +
+  facet_grid(~skewKurt) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +

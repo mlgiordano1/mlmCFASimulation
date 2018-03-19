@@ -107,7 +107,7 @@ bModelTrue    <- simParams$bModelTrue
 designMatrix <- designMatrix[which(designMatrix$estimators=="FIML"),]
 
 for (i in seq(nrow(designMatrix))) { # startingPoint!
-  print(paste0(i, "/", nrow(designMatrix)))
+  print(paste0("writing .inp file ", i, "/", nrow(designMatrix)))
   # Save the model we will be using
   if (designMatrix$modelSpec[i] == "trueModel") {
     wModel <- mpluswModelTrue
@@ -126,19 +126,9 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
     bModel <- mplusBModel
   }
   
-  # read in df
-  df <- readRDS(designMatrix$dfName[i])
-  n <-  paste0(substr(designMatrix$dfName[i],
-   start = 0,
-   stop = nchar(designMatrix$dfName[i])-3),
-   "dat")
-  # output df for Mplus
-  # invisible(capture.output(MplusAutomation::prepareMplusData(df, n)))
-  # write.table(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
-  data.table::fwrite(x = df, file = n, append = FALSE, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
   # write inp file
   writeLines(c('TITLE:	"This is my Title"',
-               paste0('DATA: FILE = \'../', n, "';"),
+               paste0('DATA: FILE = \'../', designMatrix$datName[i], "';"),
                'Variable: NAMES ARE id cluster y1 y2 y3 y4 y5 y6;',
                 'USEVARIABLE = cluster y1 y2 y3 y4 y5 y6;',
                'MISSING=.;',

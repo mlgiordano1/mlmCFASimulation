@@ -2,21 +2,22 @@ rm(list=ls())
 # factors for the simulation:
 # use even numbers for clusterSize and clusterN
 # simulation will automatically make unbalanced have half clusters -15 and half +15
-iterationsPer= 500        # number of iterations per between cell condition
+iterationsPer= 600        # number of iterations per between cell condition
 # between cell factors
-clusterSize  = c(100)     # use even numbers
-clusterN     = c(100)     # use even numbers
-clusterBal   = c("bal")   # bal and unbal
-distribution = c("normal")               # normal and nonNormal
+clusterSize  = c(30,100)        # use even numbers
+clusterN     = c(30,100)        # use even numbers
+clusterBal   = c("bal", "unbal")   # bal and unbal
 wSkew        = c(0, 2)
-wKurt        = c(0, 3)
+wKurt        = c(0, 8)
 bSkew        = c(0, 2)
-bKurt        = c(0, 3)
+bKurt        = c(0, 8)
+print(paste0("There are ", length(clusterSize)*length(clusterN)*length(clusterBal)*4, 
+  " between group conditions"))
 # Within cell factors
-modelSpec    = c("trueModel") # trueModel and misSpec
-# modelSpec    = c("trueModel", "misSpec", "misSpec1", "misSpec2", "misSpec3") # trueModel and misSpec
-estimators   = c("FIML", "Muthen") # FIML, Goldstein, Muthen
-
+# modelSpec    = c("trueModel") # trueModel and misSpec
+modelSpec    = c("trueModel", "misSpec1", "misSpec2", "misSpec3") # trueModel and misSpec
+estimators   = c("FIML", "Muthen", "Goldstein") # FIML, Goldstein, Muthen
+# 172800
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
 makeNewData <- TRUE
@@ -135,7 +136,6 @@ designMatrix <- createDesignMatrix(nIter        = iterationsPer,
                                    clusterSize  = clusterSize,
                                    clusterN     = clusterN,
                                    clusterBal   = clusterBal,
-                                   distribution = distribution,
                                    wSkew        = wSkew,
                                    wKurt        = wKurt, 
                                    bSkew        = bSkew, 
@@ -151,13 +151,15 @@ designMatrix[which(designMatrix$wSkew >  0 & designMatrix$wKurt == 0), ] <- NA
 designMatrix[which(designMatrix$bSkew == 0 & designMatrix$bKurt  > 0), ] <- NA
 designMatrix[which(designMatrix$bSkew >  0 & designMatrix$bKurt == 0), ] <- NA
 designMatrix <- designMatrix[complete.cases(designMatrix),]
+designMatrix$skewKurt <- paste0(designMatrix$wSkew, designMatrix$wKurt, 
+                                designMatrix$bSkew, designMatrix$bKurt )
+unique(designMatrix$skewKurt)
 
 # merging the seeds into the between cell factors
 btwCell <- designMatrix[,c("Iteration", 
                         "clusterSize", 
                         "clusterN", 
                         "clusterBal", 
-                        "distribution", 
                         "wSkew",
                         "wKurt",
                         "bSkew",
@@ -168,34 +170,38 @@ btwCell$dfName <- paste0(dataDir, "/",
                          btwCell$clusterSize, "_",
                          btwCell$clusterN, "_",
                          btwCell$clusterBal, "_",
-                         btwCell$distribution, "_",
                          btwCell$wSkew, btwCell$wKurt,
                          btwCell$bSkew, btwCell$bKurt, "_",
                          btwCell$Iteration,
                          ".rds")
+btwCell$datName <- paste0(dataDir, "/",
+                         btwCell$clusterSize, "_",
+                         btwCell$clusterN, "_",
+                         btwCell$clusterBal, "_",
+                         btwCell$wSkew, btwCell$wKurt,
+                         btwCell$bSkew, btwCell$bKurt, "_",
+                         btwCell$Iteration,
+                         ".dat")
+
+
 designMatrix <- merge(designMatrix, btwCell)
 
 # compute sample size
 designMatrix$sampleSize <- designMatrix$clusterSize*designMatrix$clusterN
-# make DF names
-
 #make rds name
 designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$clusterSize, "_",
                               designMatrix$clusterN, "_",
                               designMatrix$clusterBal, "_",
-                              designMatrix$distribution, "_",
                               designMatrix$wSkew, designMatrix$wKurt,
                               designMatrix$bSkew, designMatrix$bKurt, "_",
                               designMatrix$Iteration,
                               ".rds")
-
 #make inp name
 designMatrix$inpName <- paste0(fitModelDir, "/",
                               designMatrix$clusterSize, "_",
                               designMatrix$clusterN, "_",
                               designMatrix$clusterBal, "_",
-                              designMatrix$distribution, "_",
                               designMatrix$wSkew, designMatrix$wKurt,
                               designMatrix$bSkew, designMatrix$bKurt, "_",
                               # within factors
@@ -206,7 +212,7 @@ designMatrix$inpName <- paste0(fitModelDir, "/",
 # create data based on design matrix
 if (makeNewData==TRUE) {
   for (i in seq(nrow(btwCell))) {
-    print(i)
+    print(paste0("Generating and saving dataset ", i, "/", nrow(btwCell)))
     if (btwCell$clusterBal[i]=="bal") {
       bal <- TRUE
     } else {
@@ -214,27 +220,34 @@ if (makeNewData==TRUE) {
     }
     set.seed(btwCell$seed[i])
     df <- simData2(indicatorNames = paste0("y", 1:6),
-                   wLambda       = wLambda,
-                   wPsi          = wPsi,
-                   wTheta        = wTheta,
-                   bLambda       = bLambda,
-                   bPsi          = bPsi,
-                   bTheta        = bTheta,
-                  clusterNo      = btwCell$clusterN[i],
-                  clusterSize    = btwCell$clusterSize[i],
-                  wSkew          = btwCell$wSkew[i],
-                  wKurt          = btwCell$wKurt[i], 
-                  bSkew          = btwCell$bSkew[i],
-                  bKurt          = btwCell$bKurt[i],
-                  clusterBal     = bal,
-                  seed           = btwCell$seed[i])
+                   wLambda        = wLambda,
+                   wPsi           = wPsi,
+                   wTheta         = wTheta,
+                   bLambda        = bLambda,
+                   bPsi           = bPsi,
+                   bTheta         = bTheta,
+                   clusterNo      = btwCell$clusterN[i],
+                   clusterSize    = btwCell$clusterSize[i],
+                   wSkew          = btwCell$wSkew[i],
+                   wKurt          = btwCell$wKurt[i], 
+                   bSkew          = btwCell$bSkew[i],
+                   bKurt          = btwCell$bKurt[i],
+                   clusterBal     = bal,
+                   seed           = btwCell$seed[i])
+    # write .RDS file for miiv
     saveRDS(df, file = btwCell$dfName[i])
-    
+    # write .dat file for 
+    data.table::fwrite(x         = df, 
+                       file      = btwCell$datName[i], 
+                       append    = FALSE,
+                       quote     = FALSE, 
+                       sep       = "\t", 
+                       row.names = FALSE, 
+                       col.names = FALSE)
   }
 }
 
-
-#save Models
+#save all relevant infomation about simulation
 saveRDS(list(designMatrix  = designMatrix,
              iterationsPer = iterationsPer,
              bModelTrue    = bModelTrue, 
