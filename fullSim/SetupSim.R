@@ -15,9 +15,8 @@ print(paste0("There are ", length(clusterSize)*length(clusterN)*length(clusterBa
   " between group conditions"))
 # Within cell factors
 # modelSpec    = c("trueModel") # trueModel and misSpec
-modelSpec    = c("trueModel", "misSpec1", "misSpec2", "misSpec3") # trueModel and misSpec
+modelSpec    = c("trueModel", "misSpecW1", "misSpecW2", "misSpecW3", "misSpecB") # trueModel and misSpec
 estimators   = c("FIML", "Muthen", "Goldstein") # FIML, Goldstein, Muthen
-# 172800
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
 makeNewData <- TRUE
@@ -49,24 +48,48 @@ l2~~2*l2
 l1~~.3*l2
 '
 # The data generating matrices for using SemTools
-wLambda        = matrix(data = c(1, .8, .7, 0, .3, 0, 0, .3, 0, 1, .8, .7), 
-                        nrow = 6, byrow = FALSE)
-wPsi           = matrix(c(2, .3, .3, 2), nrow = 2, byrow = FALSE)
+(wLambda        = matrix(c(1.0, 0.0,
+                           0.8, 0.3,
+                           0.7, 0.0,
+                           0.0, 1.0,
+                           0.3, 0.8, 
+                           0.0, 0.7),
+                         nrow  = 6, 
+                         byrow = TRUE))
+(wPsi           = matrix(c(2.0, 0.3,
+                           0.3, 2.0), 
+                         nrow = 2, 
+                         byrow = TRUE))
 wTheta         = matrix(0, nrow = 6, ncol = 6)
 diag(wTheta)   = .8
 wTheta[2, 3]   = .3
 wTheta[3, 2]   = .3
-bLambda        = matrix(data = c(1, .7, .6, .8, .7, .8), 
-                        nrow = 6, byrow = FALSE)
+# between matrices
+bLambda        = matrix(data = c(1.0, 
+                                 0.7, 
+                                 0.6, 
+                                 0.8, 
+                                 0.7, 
+                                 0.8), 
+                        nrow  = 6, 
+                        byrow = TRUE)
 bPsi           = matrix(c(.5), nrow = 1, byrow = FALSE)
 bTheta         = matrix(0, nrow = 6, ncol = 6)
 diag(bTheta)   = .2
-
+bTheta[6, 5]   = .2
+bTheta[5, 6]   = .2
+bTheta
 
 # the data fitting models
 bModelTrue <- '
 l1 =~ y1+y2+y3+y4+y5+y6
+y5~~y6
 '
+
+bModelMis <- '
+l1 =~ y1+y2+y3+y4+y5+y6
+'
+
 wModelTrue <- '
 l1=~y1+y2+y3+y5
 l2=~y4+y5+y6+y2
@@ -188,7 +211,7 @@ designMatrix <- merge(designMatrix, btwCell)
 
 # compute sample size
 designMatrix$sampleSize <- designMatrix$clusterSize*designMatrix$clusterN
-#make rds name
+# make rds name
 designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$clusterSize, "_",
                               designMatrix$clusterN, "_",
@@ -197,7 +220,7 @@ designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$bSkew, designMatrix$bKurt, "_",
                               designMatrix$Iteration,
                               ".rds")
-#make inp name
+# make inp name
 designMatrix$inpName <- paste0(fitModelDir, "/",
                               designMatrix$clusterSize, "_",
                               designMatrix$clusterN, "_",
@@ -234,9 +257,9 @@ if (makeNewData==TRUE) {
                    bKurt          = btwCell$bKurt[i],
                    clusterBal     = bal,
                    seed           = btwCell$seed[i])
-    # write .RDS file for miiv
+    # write df as .RDS file for miiv
     saveRDS(df, file = btwCell$dfName[i])
-    # write .dat file for 
+    # write df as .dat file for MPlus
     data.table::fwrite(x         = df, 
                        file      = btwCell$datName[i], 
                        append    = FALSE,
@@ -255,7 +278,8 @@ saveRDS(list(designMatrix  = designMatrix,
              wModelMis     = wModelMis,
              wModelMis1    = wModelMis1,
              wModelMis2    = wModelMis2,
-             wModelMis3    = wModelMis3), 
+             wModelMis3    = wModelMis3,
+             bModelMis     = bModelMis), 
              "SimParams.rds")
 
  
