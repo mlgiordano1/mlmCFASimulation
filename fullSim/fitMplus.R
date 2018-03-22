@@ -4,16 +4,30 @@ baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
 
 
-mplusBModel <-'
+mplusBModelTrue <-'
   L4 by y1@1;
   L4 by y2*.7;
   L4 by y3*.6;
   L4 by y4*.8;
   L4 by y5*.7;
   L4 by y6*.8;
+  y5 with y6*.2;
 	L4*.5;
 	y1-y6*.2;
 '
+
+mplusBModelMis <-'
+  L4 by y1@1;
+  L4 by y2*.7;
+  L4 by y3*.6;
+  L4 by y4*.8;
+  L4 by y5*.7;
+  L4 by y6*.8;
+  ! y5 with y6*.2;
+	L4*.5;
+	y1-y6*.2;
+'
+
 
 mpluswModelTrue <- '
   L1 by y1@1;
@@ -31,21 +45,7 @@ mpluswModelTrue <- '
   L2*2;
   l1 with l2*.3;
 '
-mpluswModelMis <- '
-  L1 by y1@1;
-  L1 by y2*.8;
-  L1 by y3*.7;
-  ! L1 by y5*.3;
-  L2 by y4@1;
-  L2 by y5*.8;
-  L2 by y6*.7;
-  ! L2 by y2*.3;
-  ! y2 with y3 * .3;
 
-	y1-y6*.8;
-	L1*2;
-  L2*2;
-'
 mpluswModelMis1 <- '
   L1 by y1@1;
   L1 by y2*.8;
@@ -102,6 +102,7 @@ wModelMis1    <- simParams$wModelMis1
 wModelMis2    <- simParams$wModelMis2
 wModelMis3    <- simParams$wModelMis3
 bModelTrue    <- simParams$bModelTrue
+bModelMis     <- simParams$bModelMis
 
 # subset just the estimator we want
 designMatrix <- designMatrix[which(designMatrix$estimators=="FIML"),]
@@ -111,19 +112,22 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
   # Save the model we will be using
   if (designMatrix$modelSpec[i] == "trueModel") {
     wModel <- mpluswModelTrue
-    bModel <- mplusBModel
+    bModel <- mplusBModelTrue
   }  else if (designMatrix$modelSpec[i] == "misSpec") {
     wModel <- mpluswModelMis
-    bModel <- mplusBModel
+    bModel <- mplusBModelTrue
   } else if (designMatrix$modelSpec[i] == "misSpec1") {
     wModel <- mpluswModelMis1
-    bModel <- mplusBModel
+    bModel <- mplusBModelTrue
   } else if (designMatrix$modelSpec[i] == "misSpec2") {
     wModel <- mpluswModelMis2
-    bModel <- mplusBModel
+    bModel <- mplusBModelTrue
   } else if (designMatrix$modelSpec[i] == "misSpec3") {
     wModel <- mpluswModelMis3
-    bModel <- mplusBModel
+    bModel <- mplusBModelTrue
+  } else if (designMatrix$modelSpec[i] == "misSpecB") {
+    wModel <- mpluswModelTrue
+    bModel <- mplusBModelMis
   }
   
   # write inp file
@@ -142,5 +146,5 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
                  con = designMatrix$inpName[i])
 }
 
-setwd("./savedModels" )
-MplusAutomation::runModels()
+#setwd("./savedModels" )
+#MplusAutomation::runModels()
