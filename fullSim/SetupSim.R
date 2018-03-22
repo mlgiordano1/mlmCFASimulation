@@ -19,7 +19,7 @@ modelSpec    = c("trueModel", "misSpecW1", "misSpecW2", "misSpecW3", "misSpecB")
 estimators   = c("FIML", "Muthen", "Goldstein") # FIML, Goldstein, Muthen
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
-makeNewData <- TRUE
+makeNewData <- FALSE
 
 # The data generating models
 bGenModel <- '
@@ -218,6 +218,8 @@ designMatrix$rdsName <- paste0(fitModelDir, "/",
                               designMatrix$clusterBal, "_",
                               designMatrix$wSkew, designMatrix$wKurt,
                               designMatrix$bSkew, designMatrix$bKurt, "_",
+                              designMatrix$modelSpec, "_",
+                              designMatrix$estimators, "_",                              
                               designMatrix$Iteration,
                               ".rds")
 # make inp name
