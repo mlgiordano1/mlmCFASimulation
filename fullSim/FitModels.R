@@ -3,7 +3,7 @@ rm(list=ls())
 estimator <- "Muthen"
 # set the working director
 try({
-  baseDir <- "/nas/longleaf/home/mgiordan/forumPres"
+  baseDir <- "/nas/longleaf/home/mgiordan/fullSim"
   setwd(baseDir)
 })
 try({
@@ -14,17 +14,17 @@ try({
 simParams     <- readRDS("SimParams.rds")
 designMatrix  <- simParams$designMatrix
 iterationsPer <- simParams$iterationsPer
-wModelTrue    <- simParams$wModelTrue
-wModelMis     <- simParams$wModelMis
-wModelMis1    <- simParams$wModelMis1
-wModelMis2    <- simParams$wModelMis2
-wModelMis3    <- simParams$wModelMis3
-bModelTrue    <- simParams$bModelTrue
 
 
 #----------------------------------------------------------------------------
 # Should not need to edit below this line
 #----------------------------------------------------------------------------
+
+args=commandArgs(TRUE)
+print(args[1])
+condition <- as.numeric(args[1])
+
+
 # load relevant packages
 try({
   library("lavaan",  lib.loc="/nas/longleaf/home/mgiordan/Rlibs")
@@ -45,7 +45,7 @@ try({
 })
 # subset just the estimator we want
 designMatrix <- designMatrix[which(designMatrix$estimators==estimator),]
-for (i in seq(nrow(designMatrix))) { # startingPoint!
+for (i in condition:(condition+959)) { # startingPoint!
   print(i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
@@ -53,24 +53,24 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
   }
   # set the model spec
   if (designMatrix$modelSpec[[i]]=="trueModel") {
-    wModel <- wModelTrue
-    bModel <- bModelTrue
+    wModel <- simParams$wModelTrue
+    bModel <- simParams$bModelTrue
   }
-  if (designMatrix$modelSpec[[i]]=="misSpec") {
-    wModel <- wModelMis
-    bModel <- bModelTrue
+  if (designMatrix$modelSpec[[i]]=="misSpecW1") {
+    wModel <- simParams$wModelMis1
+    bModel <- simParams$bModelTrue
   }
-  if (designMatrix$modelSpec[[i]]=="misSpec1") {
-    wModel <- wModelMis1
-    bModel <- bModelTrue
+  if (designMatrix$modelSpec[[i]]=="misSpecW2") {
+    wModel <- simParams$wModelMis2
+    bModel <- simParams$bModelTrue
   }
-  if (designMatrix$modelSpec[[i]]=="misSpec2") {
-    wModel <- wModelMis2
-    bModel <- bModelTrue
+  if (designMatrix$modelSpec[[i]]=="misSpecW3") {
+    wModel <- simParams$wModelMis3
+    bModel <- simParams$bModelTrue
   }
-  if (designMatrix$modelSpec[[i]]=="misSpec3") {
-    wModel <- wModelMis3
-    bModel <- bModelTrue
+  if (designMatrix$modelSpec[[i]]=="misSpecB") {
+    wModel <- simParams$wModelTrue
+    bModel <- simParams$bModelMis
   }
   
   # read in data
