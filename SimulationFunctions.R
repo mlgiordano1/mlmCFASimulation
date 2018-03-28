@@ -531,4 +531,82 @@ simData2 <- function(indicatorNames,
   return(df)
 }
 
+parseMplus <- function(outFile) {
+  # things this will return 
+  # list of: term, df 
+  # did model estimate normally
+  if (any(grepl('THE MODEL ESTIMATION DID NOT TERMINATE NORMALLY', outFile))) {
+    term <- "model estimation DID NOT terminate normally"
+    return(list(term = term, residCov = NULL, saddle = NULL, df = NULL))
+    
+  }
+  if (any(grepl('MODEL ESTIMATION TERMINATED NORMALLY', outFile, fixed = FALSE))) {
+    term <- "normal"
+  }
+  # Residual Cov
+  if (any(grepl("THE RESIDUAL COVARIANCE MATRIX (THETA) IS NOT POSITIVE DEFINITE", outFile, fixed = TRUE))) {
+    residCov <- "Not-positive definite"
+  } else {
+    residCov <- "No error msg"
+  }
+  # Saddle
+  if (any(grepl("SADDLE", outFile, fixed = TRUE))) {
+    saddle <- "yes - saddle"
+  } else {
+    saddle <- "No error msg"
+  }
+
+  # create a DF to save results
+  df <- data.frame(V1 = NA)
+  dfi <- 1
+  # find within
+  withinLevel <- grep(outFile, pattern = "Within Level")
+  index <- withinLevel+2
+  head <- outFile[[index]]
+  index <- index+1
+  while (TRUE) {
+    if (nchar(outFile[[index]])<61) {
+      break
+    }
+    df[dfi, "V1"] <- paste0(head, outFile[[index]])
+    dfi <- dfi+1
+    index <- index+1
+  }
+  index <- index +1
+  #header should now be l2
+  head <- outFile[[index]]
+  index <- index+1
+  while (TRUE) {
+    if (nchar(outFile[[index]])<61) {
+      break
+    }
+    df[dfi, "V1"] <- paste0(head, outFile[[index]])
+    dfi <- dfi+1
+    index <- index+1
+  }
+  index <- index +1
+  # find between
+  betweenLevel <- grep(outFile, pattern = "Between Level")
+  index <- betweenLevel+2
+  head <- outFile[[index]]
+  index <- index+1
+  while (TRUE) {
+    if (nchar(outFile[[index]])<61) {
+      break
+    }
+    df[dfi, "V1"] <- paste0(head, outFile[[index]])
+    dfi <- dfi+1
+    index <- index+1
+  }
+  
+  # clean up the df
+  df <- strsplit(df$V1, " +")
+  df <- do.call(rbind.data.frame, df)
+  names(df) <- c("d", "lv", "by", "ind", "est", "se", "est/se", "p")
+  df <- df[c("lv", "by", "ind", "est", "se", "est/se", "p")]
+  
+  return(list(term = term, residCov = residCov, saddle = saddle, df = df))
+    
+}
+
 
