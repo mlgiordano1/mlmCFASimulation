@@ -146,5 +146,5 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
                  con = designMatrix$inpName[i])
 }
 
-#setwd("./savedModels" )
-#MplusAutomation::runModels()
+setwd("./savedModels" )
+MplusAutomation::runModels()
