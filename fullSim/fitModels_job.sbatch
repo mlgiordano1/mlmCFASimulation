@@ -12,4 +12,4 @@ export OMP_NUM_THREADS=1 #line from Karl Eklund to constrain the number of threa
 
 DATE=$(date +%Y%m%d%H%M%S)
 
-R CMD BATCH --no-save --no-restore '--args '${1} fitModels.R out_${1}_${DATE}.txt
+R CMD BATCH --no-save --no-restore '--args '${1} fitModels.R Gold_Rout_${1}_${DATE}.Rout

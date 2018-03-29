@@ -1,6 +1,6 @@
 rm(list=ls())
 # set the type to fit
-estimator <- "Muthen"
+estimator <- "Goldstein"
 # set the working director
 try({
   baseDir <- "/nas/longleaf/home/mgiordan/fullSim"
@@ -45,7 +45,7 @@ try({
 })
 # subset just the estimator we want
 designMatrix <- designMatrix[which(designMatrix$estimators==estimator),]
-for (i in condition:(condition+959)) { # startingPoint!
+for (i in condition:(condition+767)) { # startingPoint!
   print(i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
