@@ -26,16 +26,24 @@ createDesignMatrix <- function(nIter,
                                clusterSize,
                                clusterN,
                                clusterBal,
+                               wSkew = 0,
+                               wKurt = 0, 
+                               bSkew = 0, 
+                               bKurt = 0,
+                               #within factors
                                modelSpec,
-                               distribution,
                                estimators) {
   # setup the Matrix
   localMat <- expand.grid(seq(nIter),
                           clusterSize,
                           clusterN,
                           clusterBal,
+                          wSkew,
+                          wKurt,
+                          bSkew,
+                          bKurt,
+                          # within factors
                           modelSpec,
-                          distribution,
                           estimators, 
                           stringsAsFactors = FALSE)
   # name the columns will make it easier to pull
@@ -43,8 +51,12 @@ createDesignMatrix <- function(nIter,
                       "clusterSize",
                       "clusterN",
                       "clusterBal",
+                      "wSkew",
+                      "wKurt",
+                      "bSkew",
+                      "bKurt",
+                      # within 
                       "modelSpec",
-                      "distribution",
                       "estimators")
   return(localMat)
 }
@@ -231,7 +243,9 @@ mlcfaMIIV <- function(withinModel,
   b <- MIIVsem::miive(betweenModel,
                       sample.cov = covMats[["between"]],
                       sample.nobs = g,
-                      var.cov = TRUE)
+                      var.cov = TRUE, 
+                      overid.degree = 1, 
+                      overid.method = "random")
   # return the list of within and between models
   return(list(within=w, between=b))
 } # end function
@@ -375,5 +389,224 @@ decompMuthen <- function(allIndicators,
 
 }
 
+
+simData <- function(indicatorNames,
+                    withinModel, 
+                    betweenModel, 
+                    clusterNo,
+                    clusterSize,
+                    wSkew = 0,
+                    wKurt = 0,
+                    bSkew = 0,
+                    bKurt = 0,
+                    clusterBal = TRUE,
+                    seed = sample(1:1000000, 1)) {
+
+inb <- paste0(indicatorNames, "b")
+inw <- paste0(indicatorNames, "w")
+
+# Simulate between
+dfB <- lavaan::simulateData(model       = betweenModel, 
+                    model.type  = 'cfa', 
+                    sample.nobs = clusterNo,
+                    Skewness    = bSkew,
+                    Kurt        = bKurt, 
+                    seed        = seed)
+# make sure data are in correct order
+dfB        <- dfB[, indicatorNames]
+# rename with a b
+names(dfB) <- inb
+
+# Simulate within
+dfW <- lavaan::simulateData(model       = withinModel, 
+                    model.type  = 'cfa', 
+                    sample.nobs = clusterNo*clusterSize, 
+                    Skewness    = wSkew,
+                    Kurt        = wKurt, 
+                    seed        = (seed+11))
+# make sure data are in correct order
+dfW        <- dfW[, indicatorNames]
+# rename with W
+names(dfW) <- inw
+
+# make vector of ids
+id <- 1:(clusterNo*clusterSize)
+# make vector of clusters
+if (clusterBal==TRUE) {
+  cluster <- rep(1:clusterNo, clusterSize)
+} else {
+  cluster <- c(rep(1:(clusterNo/2), clusterSize-15),
+               rep(((clusterNo/2)+1):clusterNo, clusterSize+15))
+}
+
+df <- cbind(dfW, dfB,
+            cluster,
+            id)
+# make df a dataframe
+df <- as.data.frame(df)
+# create new vars
+for (i in seq(indicatorNames)) {
+  df[, indicatorNames[i]] <- df[, inw[i]] + df[, inb[i]]
+}
+# subset just the vars we want
+df <- df[, c("id", "cluster", indicatorNames)]
+
+return(df)
+}
+
+simData2 <- function(indicatorNames,
+                     wLambda,
+                     wPsi,
+                     wTheta,
+                     bLambda,
+                     bPsi,
+                     bTheta,
+                     clusterNo,
+                     clusterSize,
+                     wSkew = 0,
+                     wKurt = 0,
+                     bSkew = 0,
+                     bKurt = 0,
+                     clusterBal = TRUE,
+                     seed = sample(1:1000000, 1)) {
+  # save indicator names
+  inb <- paste0(indicatorNames, "b")
+  inw <- paste0(indicatorNames, "w")
+  # create the implied covariance matrices
+  wCov <- wLambda%*%wPsi%*%t(wLambda) + wTheta
+  bCov <- bLambda%*%bPsi%*%t(bLambda) + bTheta
+  
+  # Generate the within data
+  # if no skew or kurtosis specified for within use mass::mvrnorm
+  if (wSkew==0&wKurt==0) {
+    dfW <- MASS::mvrnorm(n        = clusterNo*clusterSize, 
+                         mu       = rep(0, length(indicatorNames)), 
+                         Sigma    = wCov)
+  } else { 
+    # if skew or kurtosis is in the model, use semTools::mvrnonnorm
+    dfW <- semTools::mvrnonnorm(n        = clusterNo*clusterSize, 
+                                mu       = rep(0, length(indicatorNames)), 
+                                Sigma    = wCov, 
+                                skewness = wSkew, 
+                                kurtosis = wKurt)
+  }
+  # generate the between
+  if (bSkew==0&bKurt==0) {
+    dfB <- MASS::mvrnorm(n        = clusterNo, 
+                         mu       = rep(0, length(indicatorNames)), 
+                         Sigma    = bCov) 
+  } else {
+    dfB <- semTools::mvrnonnorm(n        = clusterNo, 
+                                mu       = rep(0, length(indicatorNames)), 
+                                Sigma    = bCov, 
+                                skewness = bSkew, 
+                                kurtosis = bKurt)
+  }
+  # adding column names
+  colnames(dfW) <- inw
+  colnames(dfB) <- inb
+  # make vector of ids
+  id <- 1:(clusterNo*clusterSize)
+  # make vector of clusters
+  if (clusterBal==TRUE) {
+    cluster <- rep(1:clusterNo, clusterSize)
+  } else {
+    cluster <- c(rep(1:(clusterNo/2), clusterSize-15),
+                 rep(((clusterNo/2)+1):clusterNo, clusterSize+15))
+  }
+  dfw <- as.data.frame(dfW)
+  dfB <- as.data.frame(dfB)
+  df <- cbind(dfW, dfB,
+              cluster,
+              id)
+  # make df a dataframe
+  df <- as.data.frame(df)
+  # create new vars
+  for (i in seq(indicatorNames)) {
+    df[, indicatorNames[i]] <- df[, inw[i]] + df[, inb[i]]
+  }
+  # subset just the vars we want
+  df <- df[, c("id", "cluster", indicatorNames)]
+  
+  return(df)
+}
+
+parseMplus <- function(outFile) {
+  # things this will return 
+  # list of: term, df 
+  # did model estimate normally
+  if (any(grepl('THE MODEL ESTIMATION DID NOT TERMINATE NORMALLY', outFile))) {
+    term <- "model estimation DID NOT terminate normally"
+    return(list(term = term, residCov = NULL, saddle = NULL, df = NULL))
+    
+  }
+  if (any(grepl('MODEL ESTIMATION TERMINATED NORMALLY', outFile, fixed = FALSE))) {
+    term <- "normal"
+  }
+  # Residual Cov
+  if (any(grepl("THE RESIDUAL COVARIANCE MATRIX (THETA) IS NOT POSITIVE DEFINITE", outFile, fixed = TRUE))) {
+    residCov <- "Not-positive definite"
+  } else {
+    residCov <- "No error msg"
+  }
+  # Saddle
+  if (any(grepl("SADDLE", outFile, fixed = TRUE))) {
+    saddle <- "yes - saddle"
+  } else {
+    saddle <- "No error msg"
+  }
+
+  # create a DF to save results
+  df <- data.frame(V1 = NA)
+  dfi <- 1
+  # find within
+  withinLevel <- grep(outFile, pattern = "Within Level")
+  index <- withinLevel+2
+  head <- outFile[[index]]
+  index <- index+1
+  while (TRUE) {
+    if (nchar(outFile[[index]])<61) {
+      break
+    }
+    df[dfi, "V1"] <- paste0(head, outFile[[index]])
+    dfi <- dfi+1
+    index <- index+1
+  }
+  index <- index +1
+  #header should now be l2
+  head <- outFile[[index]]
+  index <- index+1
+  while (TRUE) {
+    if (nchar(outFile[[index]])<61) {
+      break
+    }
+    df[dfi, "V1"] <- paste0(head, outFile[[index]])
+    dfi <- dfi+1
+    index <- index+1
+  }
+  index <- index +1
+  # find between
+  betweenLevel <- grep(outFile, pattern = "Between Level")
+  index <- betweenLevel+2
+  head <- outFile[[index]]
+  index <- index+1
+  while (TRUE) {
+    if (nchar(outFile[[index]])<61) {
+      break
+    }
+    df[dfi, "V1"] <- paste0(head, outFile[[index]])
+    dfi <- dfi+1
+    index <- index+1
+  }
+  
+  # clean up the df
+  df <- strsplit(df$V1, " +")
+  df <- do.call(rbind.data.frame, df)
+  names(df) <- c("d", "lv", "by", "ind", "est", "se", "est/se", "p")
+  df <- df[c("lv", "by", "ind", "est", "se", "est/se", "p")]
+  
+  return(list(term = term, residCov = residCov, saddle = saddle, df = df))
+    
+}
 
 
