@@ -15,11 +15,11 @@ print(paste0("There are ", length(clusterSize)*length(clusterN)*length(clusterBa
   " between group conditions"))
 # Within cell factors
 # modelSpec    = c("trueModel") # trueModel and misSpec
-modelSpec    = c("trueModel", "misSpecW1", "misSpecW2", "misSpecW3", "misSpecB") # trueModel and misSpec
+modelSpec    = c("trueModel", "misSpecW1", "misSpecW2", "misSpecW3") # trueModel and misSpec
 estimators   = c("FIML", "Muthen", "Goldstein") # FIML, Goldstein, Muthen
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
-makeNewData <- FALSE
+makeNewData <- TRUE
 
 # The data generating models
 bGenModel <- '
@@ -76,8 +76,8 @@ bLambda        = matrix(data = c(1.0,
 bPsi           = matrix(c(.5), nrow = 1, byrow = FALSE)
 bTheta         = matrix(0, nrow = 6, ncol = 6)
 diag(bTheta)   = .2
-bTheta[6, 5]   = .2
-bTheta[5, 6]   = .2
+# bTheta[6, 5]   = .2
+# bTheta[5, 6]   = .2
 bTheta
 
 # the data fitting models
@@ -90,6 +90,7 @@ bModelMis <- '
 l1 =~ y1+y2+y3+y4+y5+y6
 '
 
+# this is all misspecification
 wModelTrue <- '
 l1=~y1+y2+y3+y5
 l2=~y4+y5+y6+y2
