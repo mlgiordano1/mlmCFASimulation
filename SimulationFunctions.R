@@ -603,6 +603,12 @@ parseMplus <- function(outFile) {
   names(df) <- c("d", "lv", "by", "ind", "est", "se", "est/se", "p")
   df <- df[c("lv", "by", "ind", "est", "se", "est/se", "p")]
   
+  df$lv <- as.character(df$lv)
+  df$by <- as.character(df$by)
+  df$ind <- as.character(df$ind)
+  df$est <- as.numeric(as.character(df$est))
+  df$se <- as.numeric(as.character(df$se))
+  
   return(list(term = term, residCov = residCov, saddle = saddle, df = df))
     
 }
