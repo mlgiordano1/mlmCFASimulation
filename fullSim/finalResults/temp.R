@@ -11,8 +11,10 @@ source("../simulationfunctions.R")
 #subset just
 names(allModels)
 
-sub <- allModels[grep("100_100_bal_0000_true", names(allModels))]
+sub <- allModels[grep("100_100_bal_2828_true", names(allModels))]
 names(sub)
+
+
 
 
 parseMplus(allModels[[1333]])

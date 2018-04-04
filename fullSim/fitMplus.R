@@ -11,7 +11,6 @@ mplusBModelTrue <-'
   L4 by y4*.8;
   L4 by y5*.7;
   L4 by y6*.8;
-  y5 with y6*.2;
 	L4*.5;
 	y1-y6*.2;
 '
@@ -116,13 +115,13 @@ for (i in seq(nrow(designMatrix))) { # startingPoint!
   }  else if (designMatrix$modelSpec[i] == "misSpec") {
     wModel <- mpluswModelMis
     bModel <- mplusBModelTrue
-  } else if (designMatrix$modelSpec[i] == "misSpec1") {
+  } else if (designMatrix$modelSpec[i] == "misSpecW1") {
     wModel <- mpluswModelMis1
     bModel <- mplusBModelTrue
-  } else if (designMatrix$modelSpec[i] == "misSpec2") {
+  } else if (designMatrix$modelSpec[i] == "misSpecW2") {
     wModel <- mpluswModelMis2
     bModel <- mplusBModelTrue
-  } else if (designMatrix$modelSpec[i] == "misSpec3") {
+  } else if (designMatrix$modelSpec[i] == "misSpecW3") {
     wModel <- mpluswModelMis3
     bModel <- mplusBModelTrue
   } else if (designMatrix$modelSpec[i] == "misSpecB") {

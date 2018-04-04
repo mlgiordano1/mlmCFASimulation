@@ -10,8 +10,18 @@
 
 !seeds.rds
 
+!SimParams.rds
+
+!nonRunModels.rds
+
 presentationSim/savedModels/savedModels/
 
 presentationSim/savedModels/
 
 fullSim/savedModels
+
+fullSim/finalResults/resultsDoc_cache
+fullSim/finalResults/resultsDoc_files
+
+!allResultsDf.rds
+

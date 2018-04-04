@@ -19,7 +19,7 @@ modelSpec    = c("trueModel", "misSpecW1", "misSpecW2", "misSpecW3") # trueModel
 estimators   = c("FIML", "Muthen", "Goldstein") # FIML, Goldstein, Muthen
 # Create a base directory on your own
 baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
-makeNewData <- TRUE
+makeNewData <- FALSE
 
 # The data generating models
 bGenModel <- '

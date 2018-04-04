@@ -1,3 +1,4 @@
+rm(list=ls())
 setwd("c:/users/mgiordan/git/mlmcfasimulation/fullsim")
 divideBy <- 100       # how many files would you like to split it into
 
