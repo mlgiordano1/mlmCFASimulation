@@ -20,5 +20,8 @@ presentationSim/savedModels/
 
 fullSim/savedModels
 
+fullSim/finalResults/resultsDoc_cache
+fullSim/finalResults/resultsDoc_files
+
 !allResultsDf.rds
 

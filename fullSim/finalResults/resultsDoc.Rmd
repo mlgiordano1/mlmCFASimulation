@@ -21,7 +21,13 @@ setwd(baseDir)
 ```
 
 ToDo:
+
+General setup, percent bias as figure and table rmse
+
 summarize non-convergence
+
+pull in parameters such as correlated error, LV var, etc.
+
 Work in emp Se's vs mean se's
 
 
@@ -156,38 +162,47 @@ ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = est
 
 # now computing summary stats by group
 r <- l_sub %>%
-  group_by(clusterSize, clusterN, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
   summarize(count = n(),
             meanBias = mean(relBias, na.rm = TRUE), 
             rmse = sqrt(sum((est-true)^2, na.rm = TRUE)/n()))
 # reshaping wide by estimator
-bias <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "meanBias" )
-names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
-rmse <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "rmse" )
-names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
+# bias <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "meanBias" )
+# names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
+rmse <- reshape2::dcast(r, parameter ~ cluster + estimators, value.var = "rmse" )
+rmse <- as.matrix(rmse)
+colnames(rmse) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
+# names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
 # merging these together
-biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
+# biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
 # sort
-biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
-biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
+# biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
+# biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
 # re number rows?
 # making a nice table
-knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
+# knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover")) %>%
+#   column_spec(1:2, bold = T, border_right = F) %>%
+#   column_spec(3,   bold = T, border_right = F) %>%
+#   column_spec(4:6, width = "30em", background = "yellow") %>%
+#   group_rows("Cell 1", 1, 11) %>%
+#   group_rows("Cell 2", 12, 22) %>%
+#   group_rows("Cell 3", 23, 33) %>%
+#   group_rows("Cell 4", 34, 44)
+knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
-  column_spec(1:2, bold = T, border_right = F) %>%
-  column_spec(3,   bold = T, border_right = F) %>%
-  column_spec(4:6, width = "30em", background = "yellow") %>%
-  group_rows("Cell 1", 1, 11) %>%
-  group_rows("Cell 2", 12, 22) %>%
-  group_rows("Cell 3", 23, 33) %>%
-  group_rows("Cell 4", 34, 44)
+  add_header_above(c(" " = 1, 
+                     "100 of 100" = 3, 
+                     "100 of 30" = 3, 
+                     "30 of 100" = 3,
+                     "30 of 30" = 3))
   
 ```
 
 
 # MisSpecW1
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=10, fig.width=10}
 # Now we want to look at the best case
 # no skew kurtosis
 l_sub <- subset(loadings, loadings$skewKurt=="0000")
@@ -199,7 +214,7 @@ l_sub <- subset(l_sub, l_sub$modelSpec=="misSpecW1")
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterSize~clusterN) +
+  facet_grid(.~cluster) +  
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -208,7 +223,7 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = est
   ggtitle("Within: misSpecW1 across sample sizes")
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterSize~clusterN) +
+  facet_grid(.~cluster) +  
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -250,7 +265,7 @@ knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
 
 # MisSpecW2
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=10, fig.width=10}
 # Now we want to look at the best case
 # no skew kurtosis
 l_sub <- subset(loadings, loadings$skewKurt=="0000")
@@ -262,7 +277,7 @@ l_sub <- subset(l_sub, l_sub$modelSpec=="misSpecW2")
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterSize~clusterN) +
+  facet_grid(.~cluster) +  
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -271,7 +286,7 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = est
   ggtitle("Within: misSpecW2 across sample sizes")
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterSize~clusterN) +
+  facet_grid(.~cluster) +  
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -312,7 +327,7 @@ knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
 
 # MisSpecW3
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=10, fig.width=10}
 # Now we want to look at the best case
 # no skew kurtosis
 l_sub <- subset(loadings, loadings$skewKurt=="0000")
@@ -324,7 +339,7 @@ l_sub <- subset(l_sub, l_sub$modelSpec=="misSpecW3")
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterSize~clusterN) +
+  facet_grid(.~cluster) +  
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -333,7 +348,7 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = est
   ggtitle("Within: misSpecW3 across sample sizes")
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterSize~clusterN) +
+  facet_grid(.~cluster) +  
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -378,7 +393,7 @@ There wasn't too much effect here honestly. In future studies it might be worth 
 
 Results here are for cells with 100 clusters of 30. I thought that was the most interesting. 100 of 100 was too large, 30 of 30 was too small (still looked ok though).
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=10, fig.width=10}
 # Now we want to look at the best case
 # no skew kurtosis
 # l_sub <- subset(loadings, loadings$skewKurt=="0000")
@@ -395,7 +410,7 @@ l_sub$cluster <- paste0(l_sub$clusterN, "of", l_sub$clusterSize)
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterBal~skewKurt) +
+  facet_grid(cluster~skewKurt) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -404,7 +419,7 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = est
   ggtitle("Within: Skew Kurtosis")
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
   geom_boxplot() +
-  facet_grid(clusterBal~skewKurt) +
+  facet_grid(cluster~skewKurt) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
@@ -447,7 +462,7 @@ knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
 # Balance/Unbalance
 
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=10, fig.width=10}
 # Now we want to look at the best case
 # no skew kurtosis
 l_sub <- subset(loadings, loadings$skewKurt=="0000")
