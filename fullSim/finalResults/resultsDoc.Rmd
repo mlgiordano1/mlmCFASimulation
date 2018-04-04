@@ -1,0 +1,514 @@
+---
+title: "Masters results"
+author: "Michael Giordano"
+date: "April 3, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# setup
+rm(list=ls())
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(MIIVsem)
+library(knitr)
+library(kableExtra)
+options(knitr.table.format = "html") 
+baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
+setwd(baseDir)
+```
+
+ToDo:
+summarize non-convergence
+Work in emp Se's vs mean se's
+
+
+```{r, include=FALSE}
+# ------------------------------------------------------------------------
+# set up df to everything else
+# read in all results
+dm <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/allResultsDf.rds")
+# convert all to character
+dm[, ] <- lapply(dm[, ], as.character)
+# make all long
+allLong <- gather(dm, parameter, est, l1.by.y1:lb.by.y6.sarg.p, factor_key = FALSE)
+# only convert estimate to numeric
+allLong$est <- as.numeric(allLong$est)
+# -----------------------------------------------------------------------
+```
+
+## Between cell conditions
+
+```{r, echo = FALSE}
+# names(dm)
+kable(unique(dm[,c("clusterSize", "clusterN", "clusterBal", "skewKurt")]), row.names = FALSE)
+```
+
+## Within Cell Conditions
+
+```{r, echo = FALSE}
+# names(dm)
+kable(unique(dm[,c("modelSpec", "estimators")]), row.names = FALSE)
+```
+
+# subsetting just the factor loadings and cleaning those
+
+```{r, echo = FALSE}
+# saving the names of all loadings (to subset just these parameters)
+l <- c("l1.by.y1",
+       "l1.by.y2",
+       "l1.by.y3",
+       "l1.by.y5",
+       "l2.by.y4",
+       "l2.by.y5",
+       "l2.by.y6",
+       "l2.by.y2",
+       "l1.by.y3",
+       "lb.by.y1",
+       "lb.by.y2",
+       "lb.by.y3",
+       "lb.by.y4",
+       "lb.by.y5",
+       "lb.by.y6")
+loadings <- allLong[allLong$parameter %in% l, ]
+# put in the true values
+loadings[loadings$parameter=="l1.by.y1", "true"] <- 1
+loadings[loadings$parameter=="l1.by.y2", "true"] <- .8
+loadings[loadings$parameter=="l1.by.y3", "true"] <- .7
+loadings[loadings$parameter=="l2.by.y4", "true"] <- 1
+loadings[loadings$parameter=="l2.by.y5", "true"] <- .8
+loadings[loadings$parameter=="l2.by.y6", "true"] <- .7
+loadings[loadings$parameter=="l1.by.y5", "true"] <- .3
+loadings[loadings$parameter=="l2.by.y2", "true"] <- .3
+# tru values for between parameters
+loadings[loadings$parameter=="lb.by.y2", "true"] <- .7
+loadings[loadings$parameter=="lb.by.y3", "true"] <- .6
+loadings[loadings$parameter=="lb.by.y4", "true"] <- .8
+loadings[loadings$parameter=="lb.by.y5", "true"] <- .7
+loadings[loadings$parameter=="lb.by.y6", "true"] <- .8
+# Remove the scaling indicators
+loadings <- loadings[which(loadings$parameter!="l1.by.y1"),]
+loadings <- loadings[which(loadings$parameter!="l2.by.y4"),]
+loadings <- loadings[which(loadings$parameter!="lb.by.y1"),]
+#relative bias
+loadings$relBias <- (loadings$est - loadings$true) / loadings$true
+
+# finally saving the names of within and between loadings
+wl <-c("l1.by.y1",
+       "l1.by.y2",
+       "l1.by.y3",
+       "l1.by.y5",
+       "l2.by.y4",
+       "l2.by.y5",
+       "l2.by.y6",
+       "l2.by.y2")
+bl <- c("lb.by.y1",
+       "lb.by.y2",
+       "lb.by.y3",
+       "lb.by.y4",
+       "lb.by.y5",
+       "lb.by.y6")
+
+loadings$cluster <- as.factor(paste0(loadings$clusterN,"groups_of_N", loadings$clusterSize))
+# getting the order right
+loadings$cluster <- relevel(loadings$cluster, " 30groups_of_N 30")
+loadings$cluster <- relevel(loadings$cluster, " 30groups_of_N100")
+loadings$cluster <- relevel(loadings$cluster, "100groups_of_N 30")
+loadings$cluster <- relevel(loadings$cluster, "100groups_of_N100")
+
+```
+
+# Step 1: true model
+Here I am going to ignore the effects of skew, unbalance, and just look at relative bias and rmse for truemodels across sample sizes
+
+```{r, echo = FALSE}
+# Now we want to look at the best case
+# no skew kurtosis
+l_sub <- subset(loadings, loadings$skewKurt=="0000")
+# only balanced clusters
+l_sub <- subset(l_sub, l_sub$clusterBal=="bal")
+# true model
+l_sub <- subset(l_sub, l_sub$modelSpec=="trueModel")
+
+# first make relative bias plots (this is more intuitive than the tables)
+ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  # facet_grid(.~clusterSize + clusterN) +
+  facet_grid(.~cluster) +  
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Within: trueModel across sample sizes")
+ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(.~cluster) + 
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-1,1), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Between: true model across sample sizes")
+
+
+# now computing summary stats by group
+r <- l_sub %>%
+  group_by(clusterSize, clusterN, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  summarize(count = n(),
+            meanBias = mean(relBias, na.rm = TRUE), 
+            rmse = sqrt(sum((est-true)^2, na.rm = TRUE)/n()))
+# reshaping wide by estimator
+bias <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "meanBias" )
+names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
+rmse <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "rmse" )
+names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
+# merging these together
+biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
+# sort
+biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
+biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
+# re number rows?
+# making a nice table
+knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1:2, bold = T, border_right = F) %>%
+  column_spec(3,   bold = T, border_right = F) %>%
+  column_spec(4:6, width = "30em", background = "yellow") %>%
+  group_rows("Cell 1", 1, 11) %>%
+  group_rows("Cell 2", 12, 22) %>%
+  group_rows("Cell 3", 23, 33) %>%
+  group_rows("Cell 4", 34, 44)
+  
+```
+
+
+# MisSpecW1
+
+```{r, echo = FALSE}
+# Now we want to look at the best case
+# no skew kurtosis
+l_sub <- subset(loadings, loadings$skewKurt=="0000")
+# only balanced clusters
+l_sub <- subset(l_sub, l_sub$clusterBal=="bal")
+# true model
+l_sub <- subset(l_sub, l_sub$modelSpec=="misSpecW1")
+
+# first make relative bias plots (this is more intuitive than the tables)
+ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterSize~clusterN) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Within: misSpecW1 across sample sizes")
+ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterSize~clusterN) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-1,1), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Between: misSpecW1 model across sample sizes")
+
+
+# now computing summary stats by group
+r <- l_sub %>%
+  group_by(clusterSize, clusterN, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  summarize(count = n(),
+            meanBias = mean(relBias, na.rm = TRUE), 
+            rmse = sqrt(sum((est-true)^2, na.rm = TRUE)/n()))
+# reshaping wide by estimator
+bias <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "meanBias" )
+names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
+rmse <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "rmse" )
+names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
+# merging these together
+biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
+# sort
+biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
+biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
+# re number rows?
+# making a nice table
+knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1:2, bold = T, border_right = F) %>%
+  column_spec(3,   bold = T, border_right = F) %>%
+  column_spec(4:6, width = "30em", background = "yellow") %>%
+  group_rows("Cell 1", 1, 11) %>%
+  group_rows("Cell 2", 12, 22) %>%
+  group_rows("Cell 3", 23, 33) %>%
+  group_rows("Cell 4", 34, 44)
+  
+```
+
+
+# MisSpecW2
+
+```{r, echo = FALSE}
+# Now we want to look at the best case
+# no skew kurtosis
+l_sub <- subset(loadings, loadings$skewKurt=="0000")
+# only balanced clusters
+l_sub <- subset(l_sub, l_sub$clusterBal=="bal")
+# true model
+l_sub <- subset(l_sub, l_sub$modelSpec=="misSpecW2")
+
+# first make relative bias plots (this is more intuitive than the tables)
+ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterSize~clusterN) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Within: misSpecW2 across sample sizes")
+ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterSize~clusterN) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-1,1), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Between: misSpecW2 model across sample sizes")
+
+
+# now computing summary stats by group
+r <- l_sub %>%
+  group_by(clusterSize, clusterN, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  summarize(count = n(),
+            meanBias = mean(relBias, na.rm = TRUE), 
+            rmse = sqrt(sum((est-true)^2, na.rm = TRUE)/n()))
+# reshaping wide by estimator
+bias <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "meanBias" )
+names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
+rmse <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "rmse" )
+names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
+# merging these together
+biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
+# sort
+biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
+biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
+# re number rows?
+# making a nice table
+knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1:2, bold = T, border_right = F) %>%
+  column_spec(3,   bold = T, border_right = F) %>%
+  column_spec(4:6, width = "30em", background = "yellow") %>%
+  group_rows("Cell 1", 1, 11) %>%
+  group_rows("Cell 2", 12, 22) %>%
+  group_rows("Cell 3", 23, 33) %>%
+  group_rows("Cell 4", 34, 44)
+  
+```
+
+# MisSpecW3
+
+```{r, echo = FALSE}
+# Now we want to look at the best case
+# no skew kurtosis
+l_sub <- subset(loadings, loadings$skewKurt=="0000")
+# only balanced clusters
+l_sub <- subset(l_sub, l_sub$clusterBal=="bal")
+# true model
+l_sub <- subset(l_sub, l_sub$modelSpec=="misSpecW3")
+
+# first make relative bias plots (this is more intuitive than the tables)
+ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterSize~clusterN) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Within: misSpecW3 across sample sizes")
+ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterSize~clusterN) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-1,1), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Between: misSpecW3 model across sample sizes")
+
+
+# now computing summary stats by group
+r <- l_sub %>%
+  group_by(clusterSize, clusterN, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  summarize(count = n(),
+            meanBias = mean(relBias, na.rm = TRUE), 
+            rmse = sqrt(sum((est-true)^2, na.rm = TRUE)/n()))
+# reshaping wide by estimator
+bias <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "meanBias" )
+names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
+rmse <- reshape2::dcast(r, clusterSize + clusterN + parameter ~ estimators, value.var = "rmse" )
+names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
+# merging these together
+biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
+# sort
+biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
+biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
+# re number rows?
+# making a nice table
+knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1:2, bold = T, border_right = F) %>%
+  column_spec(3,   bold = T, border_right = F) %>%
+  column_spec(4:6, width = "30em", background = "yellow") %>%
+  group_rows("Cell 1", 1, 11) %>%
+  group_rows("Cell 2", 12, 22) %>%
+  group_rows("Cell 3", 23, 33) %>%
+  group_rows("Cell 4", 34, 44)
+  
+```
+
+# Skew/Kurtosis
+
+There wasn't too much effect here honestly. In future studies it might be worth pushing around a bit more. But for the time being at least we know that these are at least mildly robust to skew/kurtosis.
+
+Results here are for cells with 100 clusters of 30. I thought that was the most interesting. 100 of 100 was too large, 30 of 30 was too small (still looked ok though).
+
+```{r, echo = FALSE}
+# Now we want to look at the best case
+# no skew kurtosis
+# l_sub <- subset(loadings, loadings$skewKurt=="0000")
+# only balanced clusters
+l_sub <- subset(loadings, loadings$clusterBal=="bal")
+# true model
+l_sub <- subset(l_sub, l_sub$modelSpec=="trueModel")
+# maybe just subset the largest N
+l_sub <- subset(l_sub, l_sub$clusterSize==" 30")
+l_sub <- subset(l_sub, l_sub$clusterN=="100")
+
+l_sub$cluster <- paste0(l_sub$clusterN, "of", l_sub$clusterSize)
+
+# first make relative bias plots (this is more intuitive than the tables)
+ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterBal~skewKurt) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Within: Skew Kurtosis")
+ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterBal~skewKurt) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-1,1), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Between: Skew Kurtosis")
+
+
+# now computing summary stats by group
+r <- l_sub %>%
+  group_by(clusterSize, clusterN, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  summarize(count = n(),
+            meanBias = mean(relBias, na.rm = TRUE), 
+            rmse = sqrt(sum((est-true)^2, na.rm = TRUE)/n()))
+# reshaping wide by estimator
+bias <- reshape2::dcast(r, clusterSize + clusterN + parameter + skewKurt ~ estimators, value.var = "meanBias" )
+names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
+rmse <- reshape2::dcast(r, clusterSize + clusterN + parameter + skewKurt ~ estimators, value.var = "rmse" )
+names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
+# merging these together
+biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
+# sort
+biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
+biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
+# re number rows?
+# making a nice table
+knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1:2, bold = T, border_right = F) %>%
+  column_spec(3,   bold = T, border_right = F) %>%
+  column_spec(4:6, width = "30em", background = "yellow") %>%
+  group_rows("Cell 1", 1, 11) %>%
+  group_rows("Cell 2", 12, 22) %>%
+  group_rows("Cell 3", 23, 33) %>%
+  group_rows("Cell 4", 34, 44)
+  
+```
+
+
+# Balance/Unbalance
+
+
+```{r, echo = FALSE}
+# Now we want to look at the best case
+# no skew kurtosis
+l_sub <- subset(loadings, loadings$skewKurt=="0000")
+# only balanced clusters
+# l_sub <- subset(loadings, loadings$clusterBal=="bal")
+# true model
+l_sub <- subset(l_sub, l_sub$modelSpec=="trueModel")
+# maybe just subset the largest N
+# l_sub <- subset(l_sub, l_sub$clusterSize==" 30")
+# l_sub <- subset(l_sub, l_sub$clusterN=="100")
+
+l_sub$cluster <- paste0(l_sub$clusterN, "of", l_sub$clusterSize)
+
+# first make relative bias plots (this is more intuitive than the tables)
+ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterBal~skewKurt) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-.5,.5), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Within: Balanced vs Unbalanced")
+ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(clusterBal~skewKurt) +
+  geom_hline(yintercept = .2) + 
+  geom_hline(yintercept = -.2) + 
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-1,1), breaks = seq(from = -.8, to = .8, by = .2)) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+  ggtitle("Between: Balanced vs Unbalanced")
+
+
+# now computing summary stats by group
+r <- l_sub %>%
+  group_by(clusterSize, clusterN, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  summarize(count = n(),
+            meanBias = mean(relBias, na.rm = TRUE), 
+            rmse = sqrt(sum((est-true)^2, na.rm = TRUE)/n()))
+# reshaping wide by estimator
+bias <- reshape2::dcast(r, clusterSize + clusterN + parameter + skewKurt ~ estimators, value.var = "meanBias" )
+names(bias)[4:6] <- paste0(names(bias)[4:6], "bias")
+rmse <- reshape2::dcast(r, clusterSize + clusterN + parameter + skewKurt ~ estimators, value.var = "rmse" )
+names(rmse)[4:6] <- paste0(names(rmse)[4:6], "rmse")
+# merging these together
+biasandrmse <- merge(bias, rmse, by = c("clusterSize", "clusterN", "parameter"))
+# sort
+biasandrmse <- biasandrmse[order(biasandrmse$clusterSize, decreasing = TRUE), ]
+biasandrmse <- biasandrmse[order(biasandrmse$clusterN, decreasing = TRUE), ]
+# re number rows?
+# making a nice table
+knitr::kable(biasandrmse, digits = 3, row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1:2, bold = T, border_right = F) %>%
+  column_spec(3,   bold = T, border_right = F) %>%
+  column_spec(4:6, width = "30em", background = "yellow") %>%
+  group_rows("Cell 1", 1, 11) %>%
+  group_rows("Cell 2", 12, 22) %>%
+  group_rows("Cell 3", 23, 33) %>%
+  group_rows("Cell 4", 34, 44)
+  
+```
+
