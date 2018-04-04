@@ -5,10 +5,12 @@ library(ggplot2)
 library(stringr)
 library(MIIVsem)
 
-source("../SimulationFunctions.R")
+
 
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
+
+source("../SimulationFunctions.R")
 
 # allMplusModels <- readRDS("finalResults/allMplus.Rds")
 # 

@@ -143,6 +143,7 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = relBias, fill = est
   geom_boxplot() +
   # facet_grid(.~clusterSize + clusterN) +
   facet_grid(.~cluster) +  
+  stat_summary(fun.y = mean, geom="point",colour="darkred", size=3) +
   geom_hline(yintercept = .2) + 
   geom_hline(yintercept = -.2) + 
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
