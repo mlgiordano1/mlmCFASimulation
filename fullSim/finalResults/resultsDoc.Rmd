@@ -123,7 +123,7 @@ loadings$cluster <- relevel(loadings$cluster, "100groups_of_N100")
 # Step 1: true model
 Here I am going to ignore the effects of skew, unbalance, and just look at relative bias and rmse for truemodels across sample sizes
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=10, fig.width=10}
 # Now we want to look at the best case
 # no skew kurtosis
 l_sub <- subset(loadings, loadings$skewKurt=="0000")
