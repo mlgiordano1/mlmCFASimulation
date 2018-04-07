@@ -229,6 +229,9 @@ source("../SimulationFunctions.R")
 # originally I was doing the processing in the .RMD file but that caused problems
 # Now we make the subsets, and basically use the .RMD file to make the tables/figures
 # --------------------------------------------------------------------------
+baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
+setwd(baseDir)
+
 # read in allresults
 dm <- readRDS("finalResults/allResultsDf.rds")
 # convert all to character

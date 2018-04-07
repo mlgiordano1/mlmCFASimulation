@@ -81,7 +81,10 @@ Here I am going to ignore the effects of skew, unbalance, and just look at relat
 
 ```{r plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/trueModelComparisons.rds")
+```
 
+## Figure 1
+```{r, echo = FALSE}
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
@@ -96,7 +99,11 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = e
   scale_y_continuous(breaks = seq(from = -50, to = 50, by = 10)) +
   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
   ggtitle("Within: trueModel across sample sizes")
+```
 
+## Figure 2
+
+```{r, echo = FALSE}
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
   facet_grid(.~cluster) + 
@@ -112,7 +119,7 @@ ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = e
 ```
 
 
-```{r summarystats}
+```{r summarystats, echo = FALSE}
 # now computing summary stats by group
 r <- l_sub %>%
   group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
@@ -156,9 +163,9 @@ se <- reshape2::dcast(se, parameter ~ cluster + estimators,
 colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 ```
 
-## bias table
+## Table 1: TRue Model Relative Bias
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -168,9 +175,9 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## RMSE table
+## Table 2: True Model RMSE
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -180,9 +187,9 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## SE table (Emp_se (meanSE))
+## Table 3: True Model Standard Errors table (Emp_se (meanSE))
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -201,7 +208,11 @@ note that the non-finite values warning here is for the missing loading l1.by.y5
 
 ```{r MisSpecW1 plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/misW1Comparisons.rds")
+```
 
+## Figure 3: Misspecification #1 Within Loadings
+
+```{r, echo = FALSE}
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
@@ -216,7 +227,11 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = e
   scale_y_continuous(breaks = seq(from = -50, to = 50, by = 10)) +
   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
   ggtitle("Within: trueModel across sample sizes")
+```
 
+# Figure 4: Misspecification #1 Between Loadings
+
+```{r, echo = FALSE}
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
   facet_grid(.~cluster) + 
@@ -232,7 +247,7 @@ ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = e
 ```
 
 
-```{r MisSpecW1 summarystats}
+```{r MisSpecW1 summarystats, echo = FALSE}
 # now computing summary stats by group
 r <- l_sub %>%
   group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
@@ -275,9 +290,9 @@ se <- reshape2::dcast(se, parameter ~ cluster + estimators,
 colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 ```
 
-## bias table
+## Table 4: Bias table
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -287,9 +302,9 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## RMSE table
+## Table 5: RMSE
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -299,9 +314,9 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## SE table (Emp_se (meanSE))
+## Table 6: Standard Errors (Emp_se (meanSE))
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -319,7 +334,11 @@ note that the non-finite values warning here is for the missing loading l1.by.y5
 
 ```{r MisSpecW2 plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/misW2Comparisons.rds")
+```
 
+## Figure 5: Misspecification #2 Within Loadings
+
+```{r, echo = FALSE}
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
@@ -334,7 +353,11 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = e
   scale_y_continuous(breaks = seq(from = -50, to = 50, by = 10)) +
   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
   ggtitle("Within: trueModel across sample sizes")
+```
 
+## Figure 6: Misspecification #2 between loadings
+
+```{r, echo = FALSE}
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
   facet_grid(.~cluster) + 
@@ -350,7 +373,7 @@ ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = e
 ```
 
 
-```{r MisSpecW2 summarystats}
+```{r MisSpecW2 summarystats, echo = FALSE}
 # now computing summary stats by group
 r <- l_sub %>%
   group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
@@ -393,9 +416,9 @@ se <- reshape2::dcast(se, parameter ~ cluster + estimators,
 colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 ```
 
-## bias table
+## Table 7: bias
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -405,9 +428,9 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## RMSE table
+## Table 8: RMSE table
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -417,9 +440,9 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## SE table (Emp_se (meanSE))
+## Table 9: SE table (Emp_se (meanSE))
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -438,7 +461,11 @@ note that the non-finite values warning here is for the missing loading l1.by.y5
 
 ```{r MisSpecW3 plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/misW3Comparisons.rds")
+```
 
+## Figure 7: Misspecification #3 within loadings
+
+```{r, echo = FALSE}
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
@@ -453,7 +480,11 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = e
   scale_y_continuous(breaks = seq(from = -50, to = 50, by = 10)) +
   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
   ggtitle("Within: trueModel across sample sizes")
+```
 
+## Figure 8: Misspecification #3 between loadings
+
+```{r, echo = FALSE}
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
   facet_grid(.~cluster) + 
@@ -469,7 +500,7 @@ ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = e
 ```
 
 
-```{r MisSpecW3 summarystats}
+```{r MisSpecW3 summarystats, echo = FALSE}
 # now computing summary stats by group
 r <- l_sub %>%
   group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
@@ -512,9 +543,9 @@ se <- reshape2::dcast(se, parameter ~ cluster + estimators,
 colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 ```
 
-## bias table
+## Table 10 bias 
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -524,9 +555,9 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## RMSE table
+## Table 11 RMSE
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -536,9 +567,9 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## SE table (Emp_se (meanSE))
+## Table 12 Standard Errors (Emp_se (meanSE))
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -559,7 +590,11 @@ Results here are for cells with 100 clusters of 30. I thought that was the most 
 
 ```{r skew kurt plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/skewKurt.rds")
+```
 
+## Figure 9: Skew Kurtosis Condition within Loadings
+
+```{r, echo = FALSE}
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
@@ -574,7 +609,11 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = e
   scale_y_continuous(breaks = seq(from = -50, to = 50, by = 10)) +
   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
   ggtitle("Within: trueModel across sample sizes")
+```
 
+## Figure 10: Skew Kurtosis Conditions between loadings
+
+```{r, echo = FALSE}
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
   facet_grid(.~skewKurt) + 
@@ -590,7 +629,7 @@ ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = e
 ```
 
 
-```{r skewkurt summarystats}
+```{r skewkurt summarystats, echo = FALSE}
 # now computing summary stats by group
 r <- l_sub %>%
   group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
@@ -635,9 +674,9 @@ colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 
 ```
 
-## bias table
+## Table 13: bias 
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -647,9 +686,9 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
                      "2828 both skew" = 3))
 ```
 
-## RMSE table
+## Table 14: RMSE 
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -659,9 +698,9 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
                      "2828 both skew" = 3))
 ```
 
-## SE table (Emp_se (meanSE))
+## Table 15: SE  (Emp_se (meanSE))
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -678,7 +717,11 @@ knitr::kable(se, row.names = FALSE) %>%
 
 ```{r balance plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/unbalance.rds")
+```
 
+## Figure 11: Unbalanced condition within loadings
+
+```{r, echo = FALSE}
 # first make relative bias plots (this is more intuitive than the tables)
 ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
@@ -693,7 +736,11 @@ ggplot(l_sub[l_sub$parameter %in% wl,], aes(x=parameter, y = p_relBias, fill = e
   scale_y_continuous(breaks = seq(from = -50, to = 50, by = 10)) +
   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
   ggtitle("Within: trueModel across sample sizes")
+```
 
+## Figure 12: Unbalanced condition between loadings
+
+```{r, echo = FALSE}
 ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot() +
   facet_grid(.~cluster) + 
@@ -709,7 +756,7 @@ ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = e
 ```
 
 
-```{r balance summarystats}
+```{r balance summarystats, echo = FALSE}
 # now computing summary stats by group
 r <- l_sub %>%
   group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
@@ -752,9 +799,9 @@ se <- reshape2::dcast(se, parameter ~ cluster + estimators,
 colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 ```
 
-## bias table
+## Table 16: bias 
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -764,9 +811,9 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## RMSE table
+## Table 17: RMSE table
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
@@ -776,9 +823,9 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-## SE table (Emp_se (meanSE))
+## Table 18: Standard Errors (Emp_se (meanSE))
 
-```{r}
+```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   add_header_above(c(" " = 1, 
