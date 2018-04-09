@@ -20,17 +20,6 @@ baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
 ```
 
-ToDo:
-
-General setup, percent bias as figure and table rmse
-
-summarize non-convergence
-
-pull in parameters such as correlated error, LV var, etc.
-
-Work in emp Se's vs mean se's
-
-# general
 
 ```{r design, include=FALSE}
 # ------------------------------------------------------------------------
@@ -40,19 +29,17 @@ dm <- dm$designMatrix
 # -----------------------------------------------------------------------
 ```
 
-## Between cell conditions
 
-```{r, echo = FALSE}
+
+```{r, echo = FALSE, include = FALSE}
 # names(dm)
+# between cell conditions
 kable(unique(dm[,c("clusterSize", "clusterN", "clusterBal", "skewKurt")]), row.names = FALSE)
-```
-
-## Within Cell Conditions
-
-```{r, echo = FALSE}
-# names(dm)
+# within cell conditions
 kable(unique(dm[,c("modelSpec", "estimators")]), row.names = FALSE)
 ```
+
+
 
 ```{r, echo = FALSE}
 # function to make sargan plot
@@ -134,14 +121,14 @@ r[grep("l2", r$parameter), "level"] <- "within"
 #                 ggtitle(title)
 
 plot <- ggplot(r, aes(x=parameter, y = mean, 
-                group = estimators, 
-                color = interaction(estimators, level))) + 
-                geom_point() +
+                      group = estimators, 
+                      color = interaction(estimators, level))) + 
+                # geom_point() +
                 geom_jitter(width = .4) +
                 facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +
                 geom_hline(yintercept = .05, color = "red", linetype = "dashed") +
-                # coord_cartesian(ylim=c(0, .4)) +
-                # scale_y_continuous(breaks = seq(from = 0, to = 1, by = .2)) +
+                coord_cartesian(ylim=c(0, 1)) +
+                scale_y_continuous(breaks = seq(from = 0, to = 1, by = .1)) +
                 theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
                 ylab("Alpha/Proportion reject null") +
                 xlab("Sample Size") +
@@ -269,7 +256,7 @@ se <- reshape2::dcast(se, parameter ~ cluster + estimators,
 colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 ```
 
-## Table 1: TRue Model Relative Bias
+## Table 1: True Model Relative Bias
 
 ```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
@@ -858,7 +845,7 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/un
 
 ## Figure 6 : Unbalance
 
-```{r, echo = FALSE, fig.height=6, fig.width=12}
+```{r, echo = FALSE, fig.height=6, fig.width=12, warning=FALSE}
 # save default par
 def_par <- par()
 par(pin = c(6, 12))
@@ -979,12 +966,39 @@ knitr::kable(se, row.names = FALSE) %>%
                      "30 of 30" = 3))
 ```
 
-# Sargan's test
+# Figure 7: Sargan's test True Model
 
-```{r, fig.height=6, fig.width=12}
+```{r, fig.height=6, fig.width=12, echo = FALSE}
 sargPlotTrue
+# sargPlotMis1
+# sargPlotMis2
+# sargPlotMis3
+```
+
+# Figure 8: Sargan's Misspecified #1
+
+```{r, fig.height=6, fig.width=12, echo = FALSE}
+# sargPlotTrue
 sargPlotMis1
+# sargPlotMis2
+# sargPlotMis3
+```
+
+# Figure 9: Sargan's test Misspecified #2
+
+```{r, fig.height=6, fig.width=12, echo = FALSE}
+# sargPlotTrue
+# sargPlotMis1
 sargPlotMis2
+# sargPlotMis3
+```
+
+# Figure 10: Sargan's test Misspecified #3
+
+```{r, fig.height=6, fig.width=12, echo = FALSE}
+# sargPlotTrue
+# sargPlotMis1
+# sargPlotMis2
 sargPlotMis3
 ```
 
