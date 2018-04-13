@@ -261,6 +261,7 @@ colnames(se) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 ```{r, echo = FALSE}
 knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
                      "100 of 100" = 3, 
                      "100 of 30" = 3, 
@@ -273,6 +274,8 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
 ```{r, echo = FALSE}
 knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  # column_spec(2:4, bold = T, color = "white", background = "#D7261E") %>%
+  column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
                      "100 of 100" = 3, 
                      "100 of 30" = 3, 
@@ -285,6 +288,7 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
 ```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
                      "100 of 100" = 3, 
                      "100 of 30" = 3, 
