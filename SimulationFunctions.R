@@ -512,11 +512,15 @@ simData2 <- function(indicatorNames,
     cluster <- c(rep(1:(clusterNo/2), clusterSize-15),
                  rep(((clusterNo/2)+1):clusterNo, clusterSize+15))
   }
+  
   dfw <- as.data.frame(dfW)
   dfB <- as.data.frame(dfB)
-  df <- cbind(dfW, dfB,
-              cluster,
-              id)
+  # adding clusterVar
+  dfB$cluster <- (1:clusterNo)
+  # combing within with cluster and id
+  df <- as.data.frame(cbind(dfW, cluster, id))
+  # merge in the cluster info
+  df <-  merge(df, dfB, by = "cluster")
   # make df a dataframe
   df <- as.data.frame(df)
   # create new vars
