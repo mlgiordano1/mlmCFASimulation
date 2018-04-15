@@ -234,6 +234,13 @@ setwd(baseDir)
 
 # read in allresults
 dm <- readRDS("finalResults/allResultsDf.rds")
+# remove current unbal bc they are wrong
+dm <- subset(dm, dm$clusterBal=='bal')
+
+#read in the corrected unbal
+unbal <- readRDS("./unbalanceFix\\finalResults\\unbalancedResultsDf.rds")
+# add together
+dm <- rbind(dm, unbal)
 # convert all to character
 dm[, ] <- lapply(dm[, ], as.character)
 # give this function the subset you want and have it process the df

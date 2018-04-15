@@ -1,6 +1,6 @@
 rm(list = ls())
 
-baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim"
+baseDir <- "C:/users/mgiordan/git/mlmcfasimulation/fullSim/unbalancefix"
 setwd(baseDir)
 
 
