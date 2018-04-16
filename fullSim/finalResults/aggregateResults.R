@@ -270,7 +270,10 @@ processDF <- function(df) {
   # compute relative bias 
   df$p_relBias <- ((df$est - df$true) / df$true)*100
   # make a cluster var
-  df$cluster <- as.factor(paste0(df$clusterN,"groups_of_N", df$clusterSize))
+  df$clusterN <- as.numeric(df$clusterN)
+  df$clusterSize <- as.numeric(df$clusterSize)
+  # df$cluster <- as.factor(paste0(df$clusterN,"groups_of_N", df$clusterSize))
+  df$cluster <- as.factor(paste0("CN = ",df$clusterN,"; CS = ", df$clusterSize))
   # getting the order right
   try(df$cluster <- relevel(df$cluster, " 30groups_of_N 30"))
   try(df$cluster <- relevel(df$cluster, " 30groups_of_N100"))

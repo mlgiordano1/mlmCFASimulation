@@ -15,6 +15,7 @@ library(stringr)
 library(MIIVsem)
 library(knitr)
 library(kableExtra)
+library(jtools)
 options(knitr.table.format = "html") 
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
@@ -129,10 +130,13 @@ plot <- ggplot(r, aes(x=parameter, y = mean,
                 geom_hline(yintercept = .05, color = "red", linetype = "dashed") +
                 coord_cartesian(ylim=c(0, 1)) +
                 scale_y_continuous(breaks = seq(from = 0, to = 1, by = .1)) +
-                theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1)) +
+                theme_apa() +
+                theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1), 
+                      legend.position = c(.8,.8)) +
                 ylab("Alpha/Proportion reject null") +
                 xlab("Sample Size") +
                 ggtitle(title)
+                
 return(plot)
 }
 
