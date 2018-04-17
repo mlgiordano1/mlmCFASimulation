@@ -47,24 +47,25 @@ kable(unique(dm[,c("modelSpec", "estimators")]), row.names = FALSE)
 makeSargPlot <- function(df, title) {
   par(pin = c(6, 12))
   # saving names of the variables we need for sargans
-wl <-c("l1.by.y1",
-       "l1.by.y2",
-       "l1.by.y3",
-       "l1.by.y5",
-       "l2.by.y4",
-       "l2.by.y5",
-       "l2.by.y6",
-       "l2.by.y2")
-bl <- c("lb.by.y1",
-        "lb.by.y2",
-        "lb.by.y3",
-        "lb.by.y4",
-        "lb.by.y5",
-        "lb.by.y6")
-names <- paste0(c(wl, bl), ".sarg.p")
+wl <-c("L1 by Y1",
+       "L1 by Y2",
+       "L1 by Y3",
+       "L1 by Y5",
+       "L2 by Y4",
+       "L2 by Y5",
+       "L2 by Y6",
+       "L2 by Y2")
+bl <- c("LB by Y1",
+       "LB by Y2",
+       "LB by Y3",
+       "LB by Y4",
+       "LB by Y5",
+       "LB by Y6")
+names <- paste0(c(wl, bl), " sarg p")
 
 # subset just the sargan p-value parameters
 sarg <- l_sub[l_sub$parameter %in% names, ]
+
 # removing a few irrelevant columns
 sarg <- sarg[,c("Iteration",
                 "clusterSize",
@@ -97,9 +98,9 @@ r <- sarg %>%
   summarize(count = n(),
             mean = mean(sarg.d))
 # creating a level variable
-r[grep("lb", r$parameter), "level"] <- "between"
-r[grep("l1", r$parameter), "level"] <- "within"
-r[grep("l2", r$parameter), "level"] <- "within"
+r[grep("LB", r$parameter), "level"] <- "between"
+r[grep("L1", r$parameter), "level"] <- "within"
+r[grep("L2", r$parameter), "level"] <- "within"
 # plotting
 # plot <- ggplot(r, aes(x= cluster, y = mean, 
 #                 group = interaction(parameter, estimators), 
@@ -121,24 +122,46 @@ r[grep("l2", r$parameter), "level"] <- "within"
 #                 xlab("Sample Size") +
 #                 ggtitle(title)
 
-plot <- ggplot(r, aes(x=parameter, y = mean, 
-                      group = estimators, 
-                      color = interaction(estimators, level))) + 
+plot <- ggplot(r, aes(x=parameter, y = mean, color = estimators)) + 
                 # geom_point() +
-                geom_jitter(width = .4) +
+                geom_jitter(width = .2) +
                 facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +
                 geom_hline(yintercept = .05, color = "red", linetype = "dashed") +
                 coord_cartesian(ylim=c(0, 1)) +
                 scale_y_continuous(breaks = seq(from = 0, to = 1, by = .1)) +
+                scale_color_manual(values = c("blue", "red"),
+                                  name="Estimator",
+                                  labels=c("Goldstein-MIIV", "MUML-MIIV")) +
                 theme_apa() +
-                theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1), 
-                      legend.position = c(.8,.8)) +
+                theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.9),
+                      legend.position = c(0.02,.99)) +
                 ylab("Alpha/Proportion reject null") +
-                xlab("Sample Size") +
+                xlab("Factor Loadings") +
                 ggtitle(title)
-                
 return(plot)
 }
+
+
+
+makeRelBiasPlot <- function(df, facetVar) {
+  p <-  ggplot(df[df$parameter %in% c(wl, bl), ], aes(x=parameter, y = p_relBias, fill = estimators)) +
+          geom_boxplot() +
+          facet_grid(as.formula(paste(".~", facetVar)), scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
+          stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
+            position = position_dodge(width = .75)) +
+          theme_apa() +
+          geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+          coord_cartesian(ylim=c(-100, 100)) +
+          scale_y_continuous(breaks = c( 0, seq(-90, 90, 20))) +
+          theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.9),
+                legend.position = c(0.02,.99)) +
+          ylab("Percent Relative Bias") +
+          xlab("Factor Loadings") +
+          scale_fill_discrete(name="Estimator",
+                       labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV"))
+return(p)
+}
+
 
 ```
 
@@ -146,20 +169,20 @@ return(plot)
 
 ```{r, echo = FALSE}
 # finally saving the names of within and between loadings
-wl <-c("l1.by.y1",
-       "l1.by.y2",
-       "l1.by.y3",
-       "l1.by.y5",
-       "l2.by.y4",
-       "l2.by.y5",
-       "l2.by.y6",
-       "l2.by.y2")
-bl <- c("lb.by.y1",
-       "lb.by.y2",
-       "lb.by.y3",
-       "lb.by.y4",
-       "lb.by.y5",
-       "lb.by.y6")
+wl <-c("L1 by Y1",
+       "L1 by Y2",
+       "L1 by Y3",
+       "L1 by Y5",
+       "L2 by Y4",
+       "L2 by Y5",
+       "L2 by Y6",
+       "L2 by Y2")
+bl <- c("LB by Y1",
+       "LB by Y2",
+       "LB by Y3",
+       "LB by Y4",
+       "LB by Y5",
+       "LB by Y6")
 ```
 
 # true model
@@ -175,41 +198,9 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/tr
 # save default par
 def_par <- par()
 par(pin = c(6, 12))
-p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
-          geom_boxplot() +
-          # facet_grid(.~clusterSize + clusterN) +
-          facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
-          stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-            position = position_dodge(width = .75)) +
-          geom_hline(yintercept = 20) + 
-          geom_hline(yintercept = -20) + 
-          geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-          coord_cartesian(ylim=c(-100, 100)) +
-          scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-          theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
-                legend.position = 'none') +
-          ylab("Percent Relative Bias") +
-          xlab("Within Loadings") + 
-          theme_apa()
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
 
-p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
-        geom_boxplot() +
-        facet_grid(.~cluster) + 
-        stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-          position = position_dodge(width = .75)) +
-        geom_hline(yintercept = 20) + 
-        geom_hline(yintercept = -20) + 
-        geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-        coord_cartesian(ylim=c(-100, 100)) +
-        scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-        theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
-        ylab(NULL) +
-        xlab("Between Loadings")+ 
-          theme_apa()
+makeRelBiasPlot(l_sub, "cluster")
 
-gridExtra::grid.arrange(p1, p2, ncol = 2, top = "Figure 1")
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg", plot = p3, width = 14, height = 6)
 
 sargPlotTrue <- makeSargPlot(l_sub, title = "True Model Sargan's test")
 
@@ -246,7 +237,7 @@ colnames(rmse) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 # -----------------------------------------------------------------------------
 # Check Standard Errors
 # take the se from r
-rSe <- r[r$parameter %in% paste0(c(bl, wl),".se"), ]
+rSe <- r[r$parameter %in% paste0(c(bl, wl)," se"), ]
 rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "mean")]
 rSe$parameter <- substr(rSe$parameter, 0, 8)
@@ -269,10 +260,10 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 ## Table 2: True Model RMSE
@@ -283,30 +274,30 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   # column_spec(2:4, bold = T, color = "white", background = "#D7261E") %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
-## Table 3: True Model Standard Errors table (Emp_se (meanSE))
+## Table 3: True Model Standard Errors table (Emp_sd (meanSE))
 
 ```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 
 # MisSpecW1
 ## relative bias plots
 
-note that the non-finite values warning here is for the missing loading l1.by.y5 (7200 are those, then 5 that are apparently problematic)
+note that the non-finite values warning here is for the missing loading L1 by y5 (7200 are those, then 5 that are apparently problematic)
 
 
 ```{r MisSpecW1 plots, echo = FALSE, fig.height=10, fig.width=10}
@@ -318,40 +309,8 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/mi
 # save default par
 def_par <- par()
 par(pin = c(6, 12))
-p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
-          geom_boxplot() +
-          # facet_grid(.~clusterSize + clusterN) +
-          facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
-          stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-            position = position_dodge(width = .75)) +
-          geom_hline(yintercept = 20) + 
-          geom_hline(yintercept = -20) + 
-          geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-          coord_cartesian(ylim=c(-100, 100)) +
-          scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-          theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
-                legend.position = 'none') +
-          ylab("Percent Relative Bias") +
-          xlab("Within Loadings")
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
 
-p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
-        geom_boxplot() +
-        facet_grid(.~cluster) + 
-        stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-          position = position_dodge(width = .75)) +
-        geom_hline(yintercept = 20) + 
-        geom_hline(yintercept = -20) + 
-        geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-        coord_cartesian(ylim=c(-100, 100)) +
-        scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-        theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
-        ylab(NULL) +
-        xlab("Between Loadings")
-
-gridExtra::grid.arrange(p1, p2, ncol = 2)
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg", plot = p3, width = 14, height = 6)
-
+makeRelBiasPlot(l_sub, "cluster")
 
 sargPlotMis1 <- makeSargPlot(l_sub, title = "Mis1 Sargan's test")
 
@@ -385,7 +344,7 @@ colnames(rmse) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 # -----------------------------------------------------------------------------
 # Check Standard Errors
 # take the se from r
-rSe <- r[r$parameter %in% paste0(c(bl, wl),".se"), ]
+rSe <- r[r$parameter %in% paste0(c(bl, wl)," se"), ]
 rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "mean")]
 rSe$parameter <- substr(rSe$parameter, 0, 8)
@@ -408,10 +367,10 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 ## Table 5: RMSE
@@ -421,30 +380,30 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
-## Table 6: Standard Errors (Emp_se (meanSE))
+## Table 6: Standard Errors (Emp_sd (meanSE))
 
 ```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 # MisSpecW2
 
 ## relative bias plots
 
-note that the non-finite values warning here is for the missing loading l1.by.y5 (7200 are those, then 5 that are apparently problematic)
+note that the non-finite values warning here is for the missing loading L1 by y5 (7200 are those, then 5 that are apparently problematic)
 
 ```{r MisSpecW2 plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/misW2Comparisons.rds")
@@ -455,40 +414,8 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/mi
 # save default par
 def_par <- par()
 par(pin = c(6, 12))
-p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
-          geom_boxplot() +
-          # facet_grid(.~clusterSize + clusterN) +
-          facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
-          stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-            position = position_dodge(width = .75)) +
-          geom_hline(yintercept = 20) + 
-          geom_hline(yintercept = -20) + 
-          geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-          coord_cartesian(ylim=c(-100, 100)) +
-          scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-          theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
-                legend.position = 'none') +
-          ylab("Percent Relative Bias") +
-          xlab("Within Loadings")
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
 
-p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
-        geom_boxplot() +
-        facet_grid(.~cluster) + 
-        stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-          position = position_dodge(width = .75)) +
-        geom_hline(yintercept = 20) + 
-        geom_hline(yintercept = -20) + 
-        geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-        coord_cartesian(ylim=c(-100, 100)) +
-        scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-        theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
-        ylab(NULL) +
-        xlab("Between Loadings")
-
-gridExtra::grid.arrange(p1, p2, ncol = 2)
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg", plot = p3, width = 14, height = 6)
-
+makeRelBiasPlot(l_sub, "cluster")
 
 sargPlotMis2 <- makeSargPlot(l_sub, title = "Mis2 Sargan's test")
 
@@ -522,7 +449,7 @@ colnames(rmse) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 # -----------------------------------------------------------------------------
 # Check Standard Errors
 # take the se from r
-rSe <- r[r$parameter %in% paste0(c(bl, wl),".se"), ]
+rSe <- r[r$parameter %in% paste0(c(bl, wl)," se"), ]
 rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "mean")]
 rSe$parameter <- substr(rSe$parameter, 0, 8)
@@ -545,10 +472,10 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 ## Table 8: RMSE table
@@ -558,23 +485,23 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
-## Table 9: SE table (Emp_se (meanSE))
+## Table 9: SE table (Emp_sd (meanSE))
 
 ```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 
@@ -582,7 +509,7 @@ knitr::kable(se, row.names = FALSE) %>%
 
 ## relative bias plots
 
-note that the non-finite values warning here is for the missing loading l1.by.y5 (7200 are those, then 5 that are apparently problematic)
+note that the non-finite values warning here is for the missing loading L1 by y5 (7200 are those, then 5 that are apparently problematic)
 
 ```{r MisSpecW3 plots, echo = FALSE, fig.height=10, fig.width=10}
 l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/misW3Comparisons.rds")
@@ -593,39 +520,8 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/mi
 # save default par
 def_par <- par()
 par(pin = c(6, 12))
-p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
-          geom_boxplot() +
-          # facet_grid(.~clusterSize + clusterN) +
-          facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
-          stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-            position = position_dodge(width = .75)) +
-          geom_hline(yintercept = 20) + 
-          geom_hline(yintercept = -20) + 
-          geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-          coord_cartesian(ylim=c(-100, 100)) +
-          scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-          theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
-                legend.position = 'none') +
-          ylab("Percent Relative Bias") +
-          xlab("Within Loadings")
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
 
-p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
-        geom_boxplot() +
-        facet_grid(.~cluster) + 
-        stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-          position = position_dodge(width = .75)) +
-        geom_hline(yintercept = 20) + 
-        geom_hline(yintercept = -20) + 
-        geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-        coord_cartesian(ylim=c(-100, 100)) +
-        scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-        theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
-        ylab(NULL) +
-        xlab("Between Loadings")
-
-gridExtra::grid.arrange(p1, p2, ncol = 2)
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg", plot = p3, width = 14, height = 6)
+makeRelBiasPlot(l_sub, "cluster")
 
 sargPlotMis3 <- makeSargPlot(l_sub, title = "Mis3 Sargan's test")
 
@@ -659,7 +555,7 @@ colnames(rmse) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 # -----------------------------------------------------------------------------
 # Check Standard Errors
 # take the se from r
-rSe <- r[r$parameter %in% paste0(c(bl, wl),".se"), ]
+rSe <- r[r$parameter %in% paste0(c(bl, wl)," se"), ]
 rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "mean")]
 rSe$parameter <- substr(rSe$parameter, 0, 8)
@@ -682,10 +578,10 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 ## Table 11 RMSE
@@ -695,23 +591,23 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
-## Table 12 Standard Errors (Emp_se (meanSE))
+## Table 12 Standard Errors (Emp_sd (meanSE))
 
 ```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 
@@ -719,7 +615,7 @@ knitr::kable(se, row.names = FALSE) %>%
 
 There wasn't too much effect here honestly. In future studies it might be worth pushing around a bit more. But for the time being at least we know that these are at least mildly robust to skew/kurtosis.
 
-Results here are for cells with 100 clusters of 30. I thought that was the most interesting. 100 of 100 was too large, 30 of 30 was too small (still looked ok though).
+Results here are for cells with 100 clusters of 30. I thought that was the most interesting. CN = 100; CS = 100 was too large, CN = 30; CS = 30 was too small (still looked ok though).
 
 ## relative bias plots
 
@@ -733,6 +629,9 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/sk
 # save default par
 def_par <- par()
 par(pin = c(6, 12))
+
+makeRelBiasPlot(l_sub, "skewKurt")
+
 p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
           geom_boxplot() +
           # facet_grid(.~clusterSize + clusterN) +
@@ -799,7 +698,7 @@ colnames(rmse) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 # -----------------------------------------------------------------------------
 # Check Standard Errors
 # take the se from r
-rSe <- r[r$parameter %in% paste0(c(bl, wl),".se"), ]
+rSe <- r[r$parameter %in% paste0(c(bl, wl)," se"), ]
 rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "mean")]
 rSe$parameter <- substr(rSe$parameter, 0, 8)
@@ -840,7 +739,7 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
                      "2828 both skew" = 3))
 ```
 
-## Table 15: SE  (Emp_se (meanSE))
+## Table 15: SE  (Emp_sd (meanSE))
 
 ```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
@@ -868,39 +767,8 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/un
 # save default par
 def_par <- par()
 par(pin = c(6, 12))
-p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
-          geom_boxplot() +
-          # facet_grid(.~clusterSize + clusterN) +
-          facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
-          stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-            position = position_dodge(width = .75)) +
-          geom_hline(yintercept = 20) + 
-          geom_hline(yintercept = -20) + 
-          geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-          coord_cartesian(ylim=c(-100, 100)) +
-          scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-          theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
-                legend.position = 'none') +
-          ylab("Percent Relative Bias") +
-          xlab("Within Loadings")
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
 
-p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
-        geom_boxplot() +
-        facet_grid(.~cluster) + 
-        stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-          position = position_dodge(width = .75)) +
-        geom_hline(yintercept = 20) + 
-        geom_hline(yintercept = -20) + 
-        geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-        coord_cartesian(ylim=c(-100, 100)) +
-        scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-        theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
-        ylab(NULL) +
-        xlab("Between Loadings")
-
-gridExtra::grid.arrange(p1, p2, ncol = 2)
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg", plot = p3, width = 14, height = 6)
+makeRelBiasPlot(l_sub, "cluster")
 
 
 ```
@@ -933,7 +801,7 @@ colnames(rmse) <- c("parameter", rep(c("FIML", "Gold", "MUML"), 4))
 # -----------------------------------------------------------------------------
 # Check Standard Errors
 # take the se from r
-rSe <- r[r$parameter %in% paste0(c(bl, wl),".se"), ]
+rSe <- r[r$parameter %in% paste0(c(bl, wl)," se"), ]
 rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "mean")]
 rSe$parameter <- substr(rSe$parameter, 0, 8)
@@ -956,10 +824,10 @@ knitr::kable(bias, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 ## Table 17: RMSE table
@@ -969,23 +837,23 @@ knitr::kable(rmse, digits = 3, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
-## Table 18: Standard Errors (Emp_se (meanSE))
+## Table 18: Standard Errors (Emp_sd (meanSE))
 
 ```{r, echo = FALSE}
 knitr::kable(se, row.names = FALSE) %>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
   column_spec(2:4, bold = T, color = "red") %>%
   add_header_above(c(" " = 1, 
-                     "100 of 100" = 3, 
-                     "100 of 30" = 3, 
-                     "30 of 100" = 3,
-                     "30 of 30" = 3))
+                     "CN = 100; CS = 100" = 3, 
+                     "CN = 100; CS = 30" = 3, 
+                     "CN = 30; CS = 100" = 3,
+                     "CN = 30; CS = 30" = 3))
 ```
 
 # Figure 7: Sargan's test True Model

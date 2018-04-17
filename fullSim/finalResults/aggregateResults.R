@@ -267,6 +267,12 @@ processDF <- function(df) {
   df <- df[which(df$parameter!="l1.by.y1"),]
   df <- df[which(df$parameter!="l2.by.y4"),]
   df <- df[which(df$parameter!="lb.by.y1"),]
+  # doing some parameter renaming
+  df$parameter <- gsub(".", " ", df$parameter, fixed = TRUE)
+  df$parameter <- gsub("l", "L", df$parameter, fixed = TRUE)
+  df$parameter <- gsub("y", "Y", df$parameter, fixed = TRUE)
+  df$parameter <- gsub("b", "B", df$parameter, fixed = TRUE)
+  df$parameter <- gsub("BY", "by", df$parameter, fixed = TRUE)
   # compute relative bias 
   df$p_relBias <- ((df$est - df$true) / df$true)*100
   # make a cluster var
@@ -275,10 +281,10 @@ processDF <- function(df) {
   # df$cluster <- as.factor(paste0(df$clusterN,"groups_of_N", df$clusterSize))
   df$cluster <- as.factor(paste0("CN = ",df$clusterN,"; CS = ", df$clusterSize))
   # getting the order right
-  try(df$cluster <- relevel(df$cluster, " 30groups_of_N 30"))
-  try(df$cluster <- relevel(df$cluster, " 30groups_of_N100"))
-  try(df$cluster <- relevel(df$cluster, "100groups_of_N 30"))
-  try(df$cluster <- relevel(df$cluster, "100groups_of_N100"))
+  try(df$cluster <- relevel(df$cluster, "CN = 30; CS = 30"))
+  try(df$cluster <- relevel(df$cluster, "CN = 30; CS = 100"))
+  try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 30"))
+  try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 100"))
   return(df)
 }
 
