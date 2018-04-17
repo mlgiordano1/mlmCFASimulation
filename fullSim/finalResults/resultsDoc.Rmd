@@ -189,7 +189,8 @@ p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, f
           theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
                 legend.position = 'none') +
           ylab("Percent Relative Bias") +
-          xlab("Within Loadings")
+          xlab("Within Loadings") + 
+          theme_apa()
 #ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
 
 p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
@@ -204,7 +205,8 @@ p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fi
         scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
         theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
         ylab(NULL) +
-        xlab("Between Loadings")
+        xlab("Between Loadings")+ 
+          theme_apa()
 
 gridExtra::grid.arrange(p1, p2, ncol = 2, top = "Figure 1")
 #ggsave(filename = "c:/users/Michael/desktop/plot.jpg", plot = p3, width = 14, height = 6)
