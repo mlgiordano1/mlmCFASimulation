@@ -66,6 +66,9 @@ names <- paste0(c(wl, bl), " sarg p")
 # subset just the sargan p-value parameters
 sarg <- l_sub[l_sub$parameter %in% names, ]
 
+# take sarg out of parameter names
+sarg$parameter <- gsub(" sarg p", "", sarg$parameter, fixed = TRUE)
+
 # removing a few irrelevant columns
 sarg <- sarg[,c("Iteration",
                 "clusterSize",
@@ -124,20 +127,23 @@ r[grep("L2", r$parameter), "level"] <- "within"
 
 plot <- ggplot(r, aes(x=parameter, y = mean, color = estimators)) + 
                 # geom_point() +
-                geom_jitter(width = .2) +
+                geom_jitter(width = .2, size = 2) +
                 facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +
                 geom_hline(yintercept = .05, color = "red", linetype = "dashed") +
                 coord_cartesian(ylim=c(0, 1)) +
                 scale_y_continuous(breaks = seq(from = 0, to = 1, by = .1)) +
-                scale_color_manual(values = c("blue", "red"),
+                scale_color_manual(values = c("#00BA38", "#619CFF"),
                                   name="Estimator",
                                   labels=c("Goldstein-MIIV", "MUML-MIIV")) +
                 theme_apa() +
-                theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.9),
-                      legend.position = c(0.02,.99)) +
-                ylab("Alpha/Proportion reject null") +
-                xlab("Factor Loadings") +
-                ggtitle(title)
+                theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1),
+                      legend.position = c(0.02,.75), 
+                      legend.background = element_rect(linetype = 1, size = 0.5, colour = 1), 
+                      legend.key.width = unit(.3, "in"),
+                      legend.text = element_text(size = rel(.9))) +
+                ylab("Sargan's Alpha/Proportion reject null") +
+                xlab("Factor Loadings") #+
+                #ggtitle(title)
 return(plot)
 }
 
@@ -153,13 +159,15 @@ makeRelBiasPlot <- function(df, facetVar) {
           geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
           coord_cartesian(ylim=c(-100, 100)) +
           scale_y_continuous(breaks = c( 0, seq(-90, 90, 20))) +
+          # guide_legend(keywidth = .5, keyheight = .5) +       
           theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.9),
-                legend.position = c(0.02,.99)) +
+                legend.position = c(0.02,.98), 
+                legend.key.height = unit(x = .17, units = "in")) +
           ylab("Percent Relative Bias") +
           xlab("Factor Loadings") +
           scale_fill_discrete(name="Estimator",
-                       labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV"))
-return(p)
+                              labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV"))
+  return(p)
 }
 
 
@@ -200,10 +208,10 @@ def_par <- par()
 par(pin = c(6, 12))
 
 makeRelBiasPlot(l_sub, "cluster")
-
+ggsave("RelBias_trueModel.png")
 
 sargPlotTrue <- makeSargPlot(l_sub, title = "True Model Sargan's test")
-
+ggsave(filename = "Sargan_trueModel.png", plot = sargPlotTrue)
 
 
 ```
@@ -246,7 +254,12 @@ rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "meanSE")]
 
 se <- merge(rp, rSe)
-se$EmpSe_mnSe <- paste0(round(se$se, digits = 3), " (", round(se$meanSE, 3), ")")
+se$EmpSe_mnSe <- paste0(formatC(round(se$se, 2),     format='f', digits=2), 
+                        " (", 
+                        formatC(round(se$meanSE, 3), format='f', digits=2), 
+                        ")")
+
+
 
 se <- reshape2::dcast(se, parameter ~ cluster + estimators, 
                         value.var = "EmpSe_mnSe" )
@@ -311,8 +324,10 @@ def_par <- par()
 par(pin = c(6, 12))
 
 makeRelBiasPlot(l_sub, "cluster")
+ggsave("RelBias_misspec1.png")
 
 sargPlotMis1 <- makeSargPlot(l_sub, title = "Mis1 Sargan's test")
+ggsave(filename = "Sargan_Mis1.png", plot = sargPlotMis1)
 
 ```
 
@@ -353,7 +368,10 @@ rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "meanSE")]
 
 se <- merge(rp, rSe)
-se$EmpSe_mnSe <- paste0(round(se$se, digits = 3), " (", round(se$meanSE, 3), ")")
+se$EmpSe_mnSe <- paste0(formatC(round(se$se, 2),     format='f', digits=2), 
+                        " (", 
+                        formatC(round(se$meanSE, 3), format='f', digits=2), 
+                        ")")
 
 se <- reshape2::dcast(se, parameter ~ cluster + estimators, 
                         value.var = "EmpSe_mnSe" )
@@ -416,8 +434,10 @@ def_par <- par()
 par(pin = c(6, 12))
 
 makeRelBiasPlot(l_sub, "cluster")
+ggsave("RelBias_misspec2.png")
 
 sargPlotMis2 <- makeSargPlot(l_sub, title = "Mis2 Sargan's test")
+ggsave("sargan_mis2.png", plot = sargPlotMis2)
 
 ```
 
@@ -458,7 +478,10 @@ rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "meanSE")]
 
 se <- merge(rp, rSe)
-se$EmpSe_mnSe <- paste0(round(se$se, digits = 3), " (", round(se$meanSE, 3), ")")
+se$EmpSe_mnSe <- paste0(formatC(round(se$se, 2),     format='f', digits=2), 
+                        " (", 
+                        formatC(round(se$meanSE, 3), format='f', digits=2), 
+                        ")")
 
 se <- reshape2::dcast(se, parameter ~ cluster + estimators, 
                         value.var = "EmpSe_mnSe" )
@@ -522,8 +545,10 @@ def_par <- par()
 par(pin = c(6, 12))
 
 makeRelBiasPlot(l_sub, "cluster")
+ggsave("RelBias_misspec3.png")
 
 sargPlotMis3 <- makeSargPlot(l_sub, title = "Mis3 Sargan's test")
+ggsave("sargan_mis3.png", plot = sargPlotMis3)
 
 ```
 
@@ -564,7 +589,10 @@ rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "meanSE")]
 
 se <- merge(rp, rSe)
-se$EmpSe_mnSe <- paste0(round(se$se, digits = 3), " (", round(se$meanSE, 3), ")")
+se$EmpSe_mnSe <- paste0(formatC(round(se$se, 2),     format='f', digits=2), 
+                        " (", 
+                        formatC(round(se$meanSE, 3), format='f', digits=2), 
+                        ")")
 
 se <- reshape2::dcast(se, parameter ~ cluster + estimators, 
                         value.var = "EmpSe_mnSe" )
@@ -631,6 +659,7 @@ def_par <- par()
 par(pin = c(6, 12))
 
 makeRelBiasPlot(l_sub, "skewKurt")
+ggsave("RelBias_skewkurt.png")
 
 p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
           geom_boxplot() +
@@ -707,7 +736,10 @@ rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "meanSE")]
 
 se <- merge(rp, rSe)
-se$EmpSe_mnSe <- paste0(round(se$se, digits = 3), " (", round(se$meanSE, 3), ")")
+se$EmpSe_mnSe <- paste0(formatC(round(se$se, 2),     format='f', digits=2), 
+                        " (", 
+                        formatC(round(se$meanSE, 3), format='f', digits=2), 
+                        ")")
 
 se <- reshape2::dcast(se, parameter ~ skewKurt + estimators, 
                         value.var = "EmpSe_mnSe" )
@@ -769,6 +801,7 @@ def_par <- par()
 par(pin = c(6, 12))
 
 makeRelBiasPlot(l_sub, "cluster")
+ggsave("RelBias_unbalance.png")
 
 
 ```
@@ -810,7 +843,10 @@ rSe <- rSe[, c("cluster", "clusterBal", "skewKurt", "modelSpec", "estimators",
   "parameter", "meanSE")]
 
 se <- merge(rp, rSe)
-se$EmpSe_mnSe <- paste0(round(se$se, digits = 3), " (", round(se$meanSE, 3), ")")
+se$EmpSe_mnSe <- paste0(formatC(round(se$se, 2),     format='f', digits=2), 
+                        " (", 
+                        formatC(round(se$meanSE, 3), format='f', digits=2), 
+                        ")")
 
 se <- reshape2::dcast(se, parameter ~ cluster + estimators, 
                         value.var = "EmpSe_mnSe" )
