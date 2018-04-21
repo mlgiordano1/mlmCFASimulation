@@ -285,6 +285,16 @@ processDF <- function(df) {
   try(df$cluster <- relevel(df$cluster, "CN = 30; CS = 100"))
   try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 30"))
   try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 100"))
+  # skewkurt2
+  df[df$skewKurt=="0000", "skewKurt2"] <- "W-MVN; B-MVN"
+  df[df$skewKurt=="2800", "skewKurt2"] <- "W-SK; B-MVN"
+  df[df$skewKurt=="0028", "skewKurt2"] <- "W-MVN; B-SK"
+  df[df$skewKurt=="2828", "skewKurt2"] <- "W-SK; B-SK"
+  df$skewKurt2 <- as.factor(df$skewKurt2)
+  try(df$skewKurt2 <- relevel(df$skewKurt2, "W-SK; B-SK"))
+  try(df$skewKurt2 <- relevel(df$skewKurt2, "W-MVN; B-SK"))
+  try(df$skewKurt2 <- relevel(df$skewKurt2, "W-SK; B-MVN"))
+  try(df$skewKurt2 <- relevel(df$skewKurt2, "W-MVN; B-MVN"))
   return(df)
 }
 

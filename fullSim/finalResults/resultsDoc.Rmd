@@ -17,10 +17,11 @@ library(knitr)
 library(kableExtra)
 library(jtools)
 options(knitr.table.format = "html") 
-baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
-setwd(baseDir)
-```
+baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults"
+knitr::opts_knit$set(root.dir = baseDir )
 
+# setwd(baseDir)
+```
 
 ```{r design, include=FALSE}
 # ------------------------------------------------------------------------
@@ -30,8 +31,6 @@ dm <- dm$designMatrix
 # -----------------------------------------------------------------------
 ```
 
-
-
 ```{r, echo = FALSE, include = FALSE}
 # names(dm)
 # between cell conditions
@@ -40,11 +39,9 @@ kable(unique(dm[,c("clusterSize", "clusterN", "clusterBal", "skewKurt")]), row.n
 kable(unique(dm[,c("modelSpec", "estimators")]), row.names = FALSE)
 ```
 
-
-
-```{r, echo = FALSE}
+```{r plotfn, echo = FALSE}
 # function to make sargan plot
-makeSargPlot <- function(df, title) {
+makeSargPlot <- function(df, facetVar, title) {
   par(pin = c(6, 12))
   # saving names of the variables we need for sargans
 wl <-c("L1 by Y1",
@@ -81,6 +78,7 @@ sarg <- sarg[,c("Iteration",
                 "modelSpec",
                 "estimators",
                 "skewKurt",
+                "skewKurt2",
                 "seed",
                 "dfName",
                 "datName",
@@ -97,7 +95,7 @@ sarg[!sarg$est<=.05, "sarg.d"] <- 0
 
 # summary
 r <- sarg %>%
-  group_by(cluster, clusterBal, skewKurt, modelSpec, estimators, parameter) %>%
+  group_by(cluster, clusterBal, skewKurt, skewKurt2, modelSpec, estimators, parameter) %>%
   summarize(count = n(),
             mean = mean(sarg.d))
 # creating a level variable
@@ -128,7 +126,8 @@ r[grep("L2", r$parameter), "level"] <- "within"
 plot <- ggplot(r, aes(x=parameter, y = mean, color = estimators)) + 
                 # geom_point() +
                 geom_jitter(width = .2, size = 2) +
-                facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +
+                # facet_grid(.~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +
+                facet_grid(as.formula(paste(".~", facetVar)), scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
                 geom_hline(yintercept = .05, color = "red", linetype = "dashed") +
                 coord_cartesian(ylim=c(0, 1)) +
                 scale_y_continuous(breaks = seq(from = 0, to = 1, by = .1)) +
@@ -150,6 +149,21 @@ return(plot)
 
 
 makeRelBiasPlot <- function(df, facetVar) {
+  wl <-c("L1 by Y1",
+       "L1 by Y2",
+       "L1 by Y3",
+       "L1 by Y5",
+       "L2 by Y4",
+       "L2 by Y5",
+       "L2 by Y6",
+       "L2 by Y2")
+bl <- c("LB by Y1",
+       "LB by Y2",
+       "LB by Y3",
+       "LB by Y4",
+       "LB by Y5",
+       "LB by Y6")
+  
   p <-  ggplot(df[df$parameter %in% c(wl, bl), ], aes(x=parameter, y = p_relBias, fill = estimators)) +
           geom_boxplot() +
           facet_grid(as.formula(paste(".~", facetVar)), scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
@@ -172,8 +186,6 @@ makeRelBiasPlot <- function(df, facetVar) {
 
 
 ```
-
-
 
 ```{r, echo = FALSE}
 # finally saving the names of within and between loadings
@@ -210,7 +222,7 @@ par(pin = c(6, 12))
 makeRelBiasPlot(l_sub, "cluster")
 ggsave("RelBias_trueModel.png")
 
-sargPlotTrue <- makeSargPlot(l_sub, title = "True Model Sargan's test")
+sargPlotTrue <- makeSargPlot(l_sub, facetVar = "cluster")
 ggsave(filename = "Sargan_trueModel.png", plot = sargPlotTrue)
 
 
@@ -326,8 +338,9 @@ par(pin = c(6, 12))
 makeRelBiasPlot(l_sub, "cluster")
 ggsave("RelBias_misspec1.png")
 
-sargPlotMis1 <- makeSargPlot(l_sub, title = "Mis1 Sargan's test")
+sargPlotMis1 <- makeSargPlot(l_sub, facetVar = "cluster")
 ggsave(filename = "Sargan_Mis1.png", plot = sargPlotMis1)
+
 
 ```
 
@@ -436,7 +449,7 @@ par(pin = c(6, 12))
 makeRelBiasPlot(l_sub, "cluster")
 ggsave("RelBias_misspec2.png")
 
-sargPlotMis2 <- makeSargPlot(l_sub, title = "Mis2 Sargan's test")
+sargPlotMis2 <- makeSargPlot(l_sub, facetVar = "cluster")
 ggsave("sargan_mis2.png", plot = sargPlotMis2)
 
 ```
@@ -547,7 +560,7 @@ par(pin = c(6, 12))
 makeRelBiasPlot(l_sub, "cluster")
 ggsave("RelBias_misspec3.png")
 
-sargPlotMis3 <- makeSargPlot(l_sub, title = "Mis3 Sargan's test")
+sargPlotMis3 <- makeSargPlot(l_sub, facetVar = "cluster")
 ggsave("sargan_mis3.png", plot = sargPlotMis3)
 
 ```
@@ -658,42 +671,45 @@ l_sub <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/sk
 def_par <- par()
 par(pin = c(6, 12))
 
-makeRelBiasPlot(l_sub, "skewKurt")
+makeRelBiasPlot(l_sub, "skewKurt2")
 ggsave("RelBias_skewkurt.png")
 
-p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
-          geom_boxplot() +
-          # facet_grid(.~clusterSize + clusterN) +
-          facet_grid(.~skewKurt, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
-          stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-            position = position_dodge(width = .75)) +
-          geom_hline(yintercept = 20) + 
-          geom_hline(yintercept = -20) + 
-          geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-          coord_cartesian(ylim=c(-100, 100)) +
-          scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-          theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
-                legend.position = 'none') +
-          ylab("Percent Relative Bias") +
-          xlab("Within Loadings")
-#ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
-
-p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
-        geom_boxplot() +
-        facet_grid(.~skewKurt) + 
-        stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
-          position = position_dodge(width = .75)) +
-        geom_hline(yintercept = 20) + 
-        geom_hline(yintercept = -20) + 
-        geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-        coord_cartesian(ylim=c(-100, 100)) +
-        scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
-        theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
-        ylab(NULL) +
-        xlab("Between Loadings")
-
-gridExtra::grid.arrange(p1, p2, ncol = 2)
+# p1 <- ggplot(l_sub[l_sub$parameter %in% wl, ], aes(x=parameter, y = p_relBias, fill = estimators)) +
+#           geom_boxplot() +
+#           # facet_grid(.~clusterSize + clusterN) +
+#           facet_grid(.~skewKurt, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +  
+#           stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
+#             position = position_dodge(width = .75)) +
+#           geom_hline(yintercept = 20) + 
+#           geom_hline(yintercept = -20) + 
+#           geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+#           coord_cartesian(ylim=c(-100, 100)) +
+#           scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
+#           theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5),
+#                 legend.position = 'none') +
+#           ylab("Percent Relative Bias") +
+#           xlab("Within Loadings")
+# #ggsave(filename = "c:/users/Michael/desktop/plot.jpg")
+# 
+# p2 <- ggplot(l_sub[l_sub$parameter %in% bl,], aes(x=parameter, y = p_relBias, fill = estimators)) +
+#         geom_boxplot() +
+#         facet_grid(.~skewKurt) + 
+#         stat_summary(fun.y = mean, geom="point",colour="darkred", size=1, 
+#           position = position_dodge(width = .75)) +
+#         geom_hline(yintercept = 20) + 
+#         geom_hline(yintercept = -20) + 
+#         geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+#         coord_cartesian(ylim=c(-100, 100)) +
+#         scale_y_continuous(breaks = seq(from = -100, to = 100, by = 20)) +
+#         theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.5)) +
+#         ylab(NULL) +
+#         xlab("Between Loadings")
+# 
+# gridExtra::grid.arrange(p1, p2, ncol = 2)
 #ggsave(filename = "c:/users/Michael/desktop/plot.jpg", plot = p3, width = 14, height = 6)
+
+sargPlotSkew <- makeSargPlot(l_sub, facetVar = "skewKurt2")
+ggsave(filename = "Sargan_skewKurtosis.png", plot = sargPlotSkew)
 
 
 ```
@@ -803,7 +819,8 @@ par(pin = c(6, 12))
 makeRelBiasPlot(l_sub, "cluster")
 ggsave("RelBias_unbalance.png")
 
-
+sargPlotBal <- makeSargPlot(l_sub, facetVar = "cluster")
+ggsave(filename = "Sargan_Bal.png", plot = sargPlotBal)
 ```
 
 
@@ -926,6 +943,24 @@ sargPlotMis2
 # sargPlotMis1
 # sargPlotMis2
 sargPlotMis3
+```
+
+# Figure: Sargan's test for skew/kurtosis
+
+```{r, fig.height=6, fig.width=12, echo = FALSE}
+# sargPlotTrue
+# sargPlotMis1
+# sargPlotMis2
+sargPlotSkew
+```
+
+# Figure: Sargan's test for Unbalanced
+
+```{r, fig.height=6, fig.width=12, echo = FALSE}
+# sargPlotTrue
+# sargPlotMis1
+# sargPlotMis2
+sargPlotBal
 ```
 
 
