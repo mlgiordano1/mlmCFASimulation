@@ -111,16 +111,11 @@ if (makeNewData==TRUE) {
   }
 }
 
+
+
+allParams$designMatrix <- designMatrix
 #save all relevant infomation about simulation
-saveRDS(list(designMatrix  = designMatrix,
-             iterationsPer = iterationsPer,
-             bModelTrue    = bModelTrue, 
-             wModelTrue    = wModelTrue,
-             wModelMis     = wModelMis,
-             wModelMis1    = wModelMis1,
-             wModelMis2    = wModelMis2,
-             wModelMis3    = wModelMis3,
-             bModelMis     = bModelMis), 
+saveRDS(allParams,
              "SimParams.rds")
 
- 
+
