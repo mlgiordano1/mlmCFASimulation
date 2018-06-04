@@ -207,7 +207,8 @@ mlcfaMIIV <- function(withinModel,
                       allIndicators,
                       l1Var,
                       l2Var,
-                      df) {
+                      df,
+                      var.cov = FALSE) {
   # Program some checks, like is long a DF, fitWith =nlme or lmer, 
   # all indicators is charater, etc.
   
@@ -238,12 +239,14 @@ mlcfaMIIV <- function(withinModel,
   # Fit covariance matrices with MIIVsem
   w <- MIIVsem::miive(withinModel,  
                       sample.cov = covMats[["within"]], 
-                      sample.nobs = n)
+                      sample.nobs = n,
+                      var.cov = var.cov)
   b <- MIIVsem::miive(betweenModel,
                       sample.cov = covMats[["between"]],
                       sample.nobs = g,
                       overid.degree = 1, 
-                      overid.method = "random")
+                      overid.method = "random",
+                      var.cov = var.cov)
   # return the list of within and between models
   return(list(within=w, between=b))
 } # end function
