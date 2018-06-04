@@ -963,5 +963,27 @@ sargPlotSkew
 sargPlotBal
 ```
 
+# adding the variance covariance parameters
 
+I only did this for the balance, truemodel, no skew/kurtosis conditions
 
+```{r, fig.height=6, fig.width=12, echo = FALSE}
+df <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/varcovfix/finalResults/cleaned_varcov.rds")
+ggplot(df, aes(x = parameter, y = p_relBias, fill = estimators)) +
+  geom_boxplot() +
+  facet_grid(~cluster, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +
+  stat_summary(fun.y = mean, geom="point",colour="darkred", size=1,
+               position = position_dodge(width = .75)) +
+  theme_apa() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  coord_cartesian(ylim=c(-100, 100)) +
+  scale_y_continuous(breaks = c( 0, seq(-90, 90, 20))) +
+  # guide_legend(keywidth = .5, keyheight = .5) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.9),
+        legend.position = c(0.02,.98),
+        legend.key.height = unit(x = .17, units = "in")) +
+  ylab("Percent Relative Bias") +
+  xlab("Variance Covariance Parameters") +
+  scale_fill_discrete(name="Estimator",
+                      labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV"))
+ggsave(filename = "varCovParams.png")

@@ -48,8 +48,8 @@ try({
 })
 # subset just the estimator we want
 designMatrix <- designMatrix[which(designMatrix$estimators==estimator),]
-# for (i in condition:(condition+24)) { # startingPoint!
-for (i in seq(nrow(designMatrix))) {
+for (i in condition:(condition+120)) { # startingPoint!
+# for (i in seq(nrow(designMatrix))) {
   print(i)
   # if the current row is the FIML estimator move to next bc fiml is all Mplus
   if (designMatrix$estimators[[i]]=="FIML") {
