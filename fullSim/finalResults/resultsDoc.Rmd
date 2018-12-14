@@ -987,3 +987,31 @@ ggplot(df, aes(x = parameter, y = p_relBias, fill = estimators)) +
   scale_fill_discrete(name="Estimator",
                       labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV"))
 ggsave(filename = "varCovParams.png")
+```
+
+# publication figures
+
+```{r}
+df <- readRDS("c:/users/mgiordan/git/mlmcfasimulation/fullSim/finalResults/publicationFig2.rds")
+# ggplot(df, aes(x = parameter, y = p_relBias, fill = estimators)) +
+#   geom_boxplot() +
+#   facet_grid(~modelSpec, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE) +
+#   stat_summary(fun.y = mean, geom="point",colour="darkred", size=1,
+#                position = position_dodge(width = .75)) +
+#   theme_apa() +
+#   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+#   coord_cartesian(ylim=c(-100, 100)) +
+#   scale_y_continuous(breaks = c( 0, seq(-90, 90, 20))) +
+#   # guide_legend(keywidth = .5, keyheight = .5) +
+#   theme(axis.text.x=element_text(angle=45,hjust=1,vjust=0.9),
+#         legend.position = c(0.02,.98),
+#         legend.key.height = unit(x = .17, units = "in")) +
+#   ylab("Percent Relative Bias") +
+#   xlab("Variance Covariance Parameters") +
+#   scale_fill_discrete(name="Estimator",
+#                       labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV"))
+# ggsave(filename = "fig2.png")
+
+makeRelBiasPlot(df, facetVar = "modelSpec")
+ggsave(filename = "fig2.png", width = 12, height = 6)
+```
