@@ -1,3 +1,5 @@
+library("tidyverse")
+
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
 
@@ -90,19 +92,30 @@ df <- l_sub
   try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 30"))
   try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 100"))
 
-  df$cluster
+  # df$cluster <- paste(as.numeric(df$cluster), ". ", df$cluster)
   
   coverages <- df %>% group_by(estimators, cluster) %>%
     summarise(Coverage.Mn = mean(covered, na.rm = TRUE))
   
-
-  ggplot(coverages, aes(x = cluster, y = Coverage.Mn, color = estimators)) +
+  # Plot it!
+  ggplot(coverages, aes(x = reorder(cluster, X = coverages$cluster, descending = FALSE), 
+                        y = Coverage.Mn, 
+                        color = estimators, 
+                        group = estimators,
+                        lty = estimators, 
+                        shape = estimators)) +
     geom_point() +
-    geom_line()
-  
-  # compute relative bias 
-  df$p_relBias <- ((df$est - df$true) / df$true)*100
-  
-  
-
-  return(df)
+    geom_line() +
+    scale_color_grey() +
+    scale_y_continuous(breaks = seq(.3, 1, .1), limits = c(.3, 1))+
+    # geom_hline(yintercept = .95, color = "red") +
+    theme_bw() +
+    xlab("Number of Clusters (CN); Size of Clusters (CS)") +
+    ylab("Coverage Rates") +
+    ggtitle(label = "Coverage Rates for True Model Specifications") +
+    theme(axis.title.x = element_text("label", vjust = -1), 
+          plot.title = element_text(hjust = .5), 
+          legend.position = c(0.93, 0.2), 
+          legend.background = element_rect(color = "black", 
+                                           fill = "grey90", size = 1, linetype = "solid"))
+  ggsave("CoverageRates.jpg")
