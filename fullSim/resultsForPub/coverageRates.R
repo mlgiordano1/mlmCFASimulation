@@ -71,8 +71,6 @@ df <- l_sub
   df$parameter <- gsub("b", "B", df$parameter, fixed = TRUE)
   df$parameter <- gsub("BY", "by", df$parameter, fixed = TRUE)
   
-  
-  
   # making the confidence intervals
   df$l.ci.95 <- df$paramEst - (1.96*df$se)
   df$u.ci.95 <- df$paramEst + (1.96*df$se)
@@ -118,4 +116,4 @@ df <- l_sub
           legend.position = c(0.93, 0.2), 
           legend.background = element_rect(color = "black", 
                                            fill = "grey90", size = 1, linetype = "solid"))
-  ggsave("CoverageRates.jpg")
+  ggsave("c:/users/mgiordan/git/mlmcfasimulation/fullSim/resultsForPub/CoverageRates.jpg")
