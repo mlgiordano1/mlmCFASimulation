@@ -29,6 +29,7 @@ l_sub <- subset(l_sub, l_sub$clusterN==" 30"&l_sub$clusterSize==" 30")
 # make it long
 df <- gather(l_sub, parameter, est, l1.by.y1:lb.by.y6.sarg.p, factor_key = FALSE)
 df$est <- as.numeric(df$est)
+
 # estimate or SE
 df$paramEst_OR_SE <- "paramEst"
 df[grepl("se",    df$parameter), "paramEst_OR_SE"] <- "se"
