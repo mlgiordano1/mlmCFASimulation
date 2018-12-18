@@ -54,7 +54,7 @@ ggplot(coverages, aes(x = reorder(cluster, X = coverages$cluster, descending = F
     geom_line(size = 1) +
   geom_hline(yintercept = .95) +
     scale_color_grey() +
-    scale_y_continuous(breaks = seq(.3, 1, .1), limits = c(.3, 1))+
+    scale_y_continuous(breaks = seq(.6, 1, .1), limits = c(.6, 1))+
     # geom_hline(yintercept = .95, color = "red") +
     theme_bw() +
     xlab("Number of Clusters (CN); Size of Clusters (CS)") +
@@ -68,7 +68,7 @@ ggplot(coverages, aes(x = reorder(cluster, X = coverages$cluster, descending = F
           legend.position = c(0.93, 0.2),
           legend.background = element_rect(color = "black",
                                            fill = "grey90", size = 1, linetype = "solid"))
-  ggsave("c:/users/mgiordan/git/mlmcfasimulation/fullSim/resultsForPub/CoverageRates_skew.jpg", width = 15, height = 7)
+  ggsave("c:/users/mgiordan/git/mlmcfasimulation/fullSim/resultsForPub/CoverageRates_skew.jpg", width = 13, height = 6)
 
 # --------------------------------------------
 # plot 2 is over both skew/kurtosis and cluster balance

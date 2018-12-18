@@ -82,12 +82,12 @@ pWithin <- ggplot(toplot, aes(x=parameter, y = p_relBias, fill = estimators)) +
                                          fill = "grey90", size = 1, linetype = "solid")) +
   ylab("Percent Relative Bias") +
   xlab("Within Factor Loadings") +
-  scale_x_discrete(labels = c("L1 by Y2" = expression(Lambda[21]), 
-                              "L1 by Y3" = expression(Lambda[31]),
-                              "L1 by Y5" = expression(Lambda[51]),
-                              "L2 by Y2" = expression(Lambda[22]),
-                              "L2 by Y5" = expression(Lambda[52]),
-                              "L2 by Y6" = expression(Lambda[62])))+
+  scale_x_discrete(labels = c("L1 by Y2" = expression(lambda[21]), 
+                              "L1 by Y3" = expression(lambda[31]),
+                              "L1 by Y5" = expression(lambda[51]),
+                              "L2 by Y2" = expression(lambda[22]),
+                              "L2 by Y5" = expression(lambda[52]),
+                              "L2 by Y6" = expression(lambda[62])))+
   # scale_fill_discrete(name="Estimator",
   #                     labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV")) +
   scale_fill_grey() 
@@ -114,11 +114,11 @@ pBetween <- ggplot(toplot, aes(x=parameter, y = p_relBias, fill = estimators)) +
         legend.position = "none") +
   ylab("Percent Relative Bias") +
   xlab("Between Factor Loadings") +
-  scale_x_discrete(labels = c("LB by Y2" = expression(Lambda[2*"B"]), 
-                              "LB by Y3" = expression(Lambda[3*"B"]),
-                              "LB by Y4" = expression(Lambda[4*"B"]),
-                              "LB by Y5" = expression(Lambda[5*"B"]),
-                              "LB by Y6" = expression(Lambda[6*"B"])))+
+  scale_x_discrete(labels = c("LB by Y2" = expression(lambda[2*"B"]), 
+                              "LB by Y3" = expression(lambda[3*"B"]),
+                              "LB by Y4" = expression(lambda[4*"B"]),
+                              "LB by Y5" = expression(lambda[5*"B"]),
+                              "LB by Y6" = expression(lambda[6*"B"])))+
   # scale_fill_discrete(name="Estimator",
   #                     labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV")) +
   scale_fill_grey() 
