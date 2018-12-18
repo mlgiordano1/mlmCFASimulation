@@ -1,4 +1,5 @@
 library("jtools")
+library("grid")
 library("tidyverse")
 
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
@@ -26,71 +27,15 @@ l_sub <- subset(l_sub, l_sub$clusterN==" 30"&l_sub$clusterSize==" 30")
 # --------------------------------------------------
 # Need to make many all the parameter columns long
 # -------------------------------------------------
-# make it long
-df <- gather(l_sub, parameter, est, l1.by.y1:lb.by.y6.sarg.p, factor_key = FALSE)
-df$est <- as.numeric(df$est)
-
-# estimate or SE
-df$paramEst_OR_SE <- "paramEst"
-df[grepl("se",    df$parameter), "paramEst_OR_SE"] <- "se"
-df[grepl(".sarg", df$parameter), "paramEst_OR_SE"] <- "sarg"
-df[grepl(".p",    df$parameter), "paramEst_OR_SE"] <- "sarg.p"
-df$parameter <- gsub(".se", "", df$parameter)
-df$parameter <- gsub(".sarg.p", "", df$parameter)
-df$parameter <- gsub(".sarg", "", df$parameter)
-unique(df$parameter)
-# make it wide by est/se/sarg/sarg.p
-df <- spread(data = df, key = paramEst_OR_SE, value = est)
-
-# put in true values
-df[df$parameter=="l1.by.y1", "true"] <- 1
-df[df$parameter=="l1.by.y2", "true"] <- .8
-df[df$parameter=="l1.by.y3", "true"] <- .7
-df[df$parameter=="l2.by.y4", "true"] <- 1
-df[df$parameter=="l2.by.y5", "true"] <- .8
-df[df$parameter=="l2.by.y6", "true"] <- .7
-df[df$parameter=="l1.by.y5", "true"] <- .3
-df[df$parameter=="l2.by.y2", "true"] <- .3
-# tru values for between parameters
-df[df$parameter=="lb.by.y2", "true"] <- .7
-df[df$parameter=="lb.by.y3", "true"] <- .6
-df[df$parameter=="lb.by.y4", "true"] <- .8
-df[df$parameter=="lb.by.y5", "true"] <- .7
-df[df$parameter=="lb.by.y6", "true"] <- .8
-# Remove the scaling indicators
-df <- df[which(df$parameter!="l1.by.y1"),]
-df <- df[which(df$parameter!="l2.by.y4"),]
-df <- df[which(df$parameter!="lb.by.y1"),]
-# doing some parameter renaming
-df$parameter <- gsub(".", " ", df$parameter, fixed = TRUE)
-df$parameter <- gsub("l", "L", df$parameter, fixed = TRUE)
-df$parameter <- gsub("y", "Y", df$parameter, fixed = TRUE)
-df$parameter <- gsub("b", "B", df$parameter, fixed = TRUE)
-df$parameter <- gsub("BY", "by", df$parameter, fixed = TRUE)
-
-# make a cluster var
-df$clusterN <- as.numeric(df$clusterN)
-df$clusterSize <- as.numeric(df$clusterSize)
-# df$cluster <- as.factor(paste0(df$clusterN,"groups_of_N", df$clusterSize))
-df$cluster <- as.factor(paste0("CN = ",df$clusterN,"; CS = ", df$clusterSize))
-# getting the order right
-try(df$cluster <- relevel(df$cluster, "CN = 30; CS = 30"))
-try(df$cluster <- relevel(df$cluster, "CN = 30; CS = 100"))
-try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 30"))
-try(df$cluster <- relevel(df$cluster, "CN = 100; CS = 100"))
-
-df$modelSpec_fac <- as.factor(df$modelSpec)
-try(df$modelSpec_fac <- relevel(df$modelSpec_fac, "misSpecW3"))
-try(df$modelSpec_fac <- relevel(df$modelSpec_fac, "misSpecW2"))
-try(df$modelSpec_fac <- relevel(df$modelSpec_fac, "misSpecW1"))
-try(df$modelSpec_fac <- relevel(df$modelSpec_fac, "trueModel"))
-
-# compute relative bias 
-df$p_relBias <- ((df$paramEst - df$true) / df$true)*100
+setwd("./resultsforpub")
+source("processDF_function.R")
+df <- processDf(l_sub)
 
 # -------------------------
 # plot it
 # -------------------------
+
+
 wl <-c("L1 by Y1",
        "L1 by Y2",
        "L1 by Y3",
@@ -113,10 +58,83 @@ spec_names <- c(
   'misSpecW3' = "Misspecification #3"
 )
 
-
-ggplot(df[df$parameter %in% c(wl, bl), ], aes(x=parameter, y = p_relBias, fill = estimators)) +
+# plot within
+toplot <- df[df$parameter %in% c(wl, bl), ]
+toplot <- toplot[grepl("within", toplot$w_or_b),]
+pWithin <- ggplot(toplot, aes(x=parameter, y = p_relBias, fill = estimators)) +
   geom_boxplot(outlier.size = 0.3, fatten = NULL) +
-  facet_grid(~modelSpec_fac, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE, 
+  facet_grid(.~modelSpec_fac, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE, 
+             labeller = as_labeller(spec_names)) +  
+  stat_summary(fun.y = mean, geom="point",colour="black", size=1, 
+               position = position_dodge(width = .75)) +
+  theme_apa() +
+  geom_hline(yintercept = 0, color = "grey", linetype = "dashed") +
+  coord_cartesian(ylim=c(-100, 100)) +
+  scale_y_continuous(breaks = c( 0, seq(-90, 90, 20))) +
+  # guide_legend(keywidth = .5, keyheight = .5) +       
+  theme(axis.text.x=element_text(angle=0,
+                                 hjust=.3,
+                                 vjust=1, 
+                                 color = "black", size = 12),
+        legend.position = c(0.06,.93), 
+        legend.key.height = unit(x = .17, units = "in"), 
+        legend.background = element_rect(color = "black", 
+                                         fill = "grey90", size = 1, linetype = "solid")) +
+  ylab("Percent Relative Bias") +
+  xlab("Within Factor Loadings") +
+  scale_x_discrete(labels = c("L1 by Y2" = expression(Lambda[21]), 
+                              "L1 by Y3" = expression(Lambda[31]),
+                              "L1 by Y5" = expression(Lambda[51]),
+                              "L2 by Y2" = expression(Lambda[22]),
+                              "L2 by Y5" = expression(Lambda[52]),
+                              "L2 by Y6" = expression(Lambda[62])))+
+  # scale_fill_discrete(name="Estimator",
+  #                     labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV")) +
+  scale_fill_grey() 
+# pWithin
+# ggsave("c:/users/mgiordan/git/mlmcfasimulation/fullSim/resultsForPub/relbias.jpg", width = 14, height = 9)
+
+toplot <- df[df$parameter %in% c(wl, bl), ]
+toplot <- toplot[grepl("between", toplot$w_or_b),]
+pBetween <- ggplot(toplot, aes(x=parameter, y = p_relBias, fill = estimators)) +
+  geom_boxplot(outlier.size = 0.3, fatten = NULL) +
+  facet_grid(.~modelSpec_fac, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE, 
+             labeller = as_labeller(spec_names)) +  
+  stat_summary(fun.y = mean, geom="point",colour="black", size=1, 
+               position = position_dodge(width = .75)) +
+  theme_apa() +
+  geom_hline(yintercept = 0, color = "grey", linetype = "dashed") +
+  coord_cartesian(ylim=c(-100, 100)) +
+  scale_y_continuous(breaks = c( 0, seq(-90, 90, 20))) +
+  # guide_legend(keywidth = .5, keyheight = .5) +       
+  theme(axis.text.x=element_text(angle=0,
+                                 hjust=.3,
+                                 vjust=1, 
+                                 color = "black", size = 12),
+        legend.position = "none") +
+  ylab("Percent Relative Bias") +
+  xlab("Between Factor Loadings") +
+  scale_x_discrete(labels = c("LB by Y2" = expression(Lambda[2*"B"]), 
+                              "LB by Y3" = expression(Lambda[3*"B"]),
+                              "LB by Y4" = expression(Lambda[4*"B"]),
+                              "LB by Y5" = expression(Lambda[5*"B"]),
+                              "LB by Y6" = expression(Lambda[6*"B"])))+
+  # scale_fill_discrete(name="Estimator",
+  #                     labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV")) +
+  scale_fill_grey() 
+# pBetween
+
+
+# grid.newpage()
+# pAll <- grid.draw(rbind(ggplotGrob(pWithin), ggplotGrob(pBetween), size = "last"))
+jpeg("relbias.jpg", height = 14, width = 10, units = "in", res = 72)
+grid.draw(rbind(ggplotGrob(pWithin), ggplotGrob(pBetween), size = "last"))
+dev.off()
+
+# plot 2 changing things
+ggplot(df[df$parameter %in% c(wl, bl), ], aes(x=modelSpec, y = p_relBias, fill = estimators)) +
+  geom_boxplot(outlier.size = 0.3, fatten = NULL) +
+  facet_grid(~parameter, scales="free_x", space="free_x", shrink=TRUE, drop=TRUE, 
              labeller = as_labeller(spec_names)) +  
   stat_summary(fun.y = mean, geom="point",colour="black", size=1, 
                position = position_dodge(width = .75)) +
@@ -134,5 +152,8 @@ ggplot(df[df$parameter %in% c(wl, bl), ], aes(x=parameter, y = p_relBias, fill =
   xlab("Factor Loadings") +
   # scale_fill_discrete(name="Estimator",
   #                     labels=c("FIML", "Goldstein-MIIV", "MUML-MIIV")) +
-  scale_fill_grey() +
-ggsave("c:/users/mgiordan/git/mlmcfasimulation/fullSim/resultsForPub/relbias.jpg", width = 14, height = 9)
+  scale_fill_grey() 
+
+
+bias <- df %>% group_by(estimators, modelSpec, w_or_b) %>%
+  summarise(mean.bias = mean(p_relBias, na.rm = TRUE))

@@ -94,6 +94,12 @@ processDf <- function(data) {
   try(df$modelSpec_fac <- relevel(df$modelSpec_fac, "misSpecW1"))
   try(df$modelSpec_fac <- relevel(df$modelSpec_fac, "trueModel"))
 
+  # ----------------------------------------------
+  # Making a factor version of model specification
+  # ----------------------------------------------
+  df$w_or_b <- "within"
+  df[grepl("LB",    df$parameter), "w_or_b"] <- "between"
+  
   return(df)
 }
 

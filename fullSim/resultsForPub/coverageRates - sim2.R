@@ -40,19 +40,18 @@ df <- processDf(l_sub)
 # --------------------------------------------
 # plot 1 is just over skew/kurtosis
 # --------------------------------------------
-coverages <- df %>% group_by(estimators, cluster, skewKurt) %>%
+coverages <- df %>% group_by(estimators, cluster, skewKurt, w_or_b) %>%
     summarise(Coverage.Mn = mean(covered, na.rm = TRUE))
   
 # Plot it!
 ggplot(coverages, aes(x = reorder(cluster, X = coverages$cluster, descending = FALSE), 
-                        y = Coverage.Mn, 
-                        color = estimators, 
-                        group = estimators,
-                        lty = estimators, 
-                        shape = estimators)) +
-  facet_grid(.~skewKurt) +
-    geom_point() +
-    geom_line() +
+                      y = Coverage.Mn, 
+                      color = estimators, 
+                      lty = estimators,
+                      group = estimators)) +
+  facet_grid(w_or_b~skewKurt) +
+    geom_point(size = 1.5) +
+    geom_line(size = 1) +
   geom_hline(yintercept = .95) +
     scale_color_grey() +
     scale_y_continuous(breaks = seq(.3, 1, .1), limits = c(.3, 1))+
@@ -62,11 +61,12 @@ ggplot(coverages, aes(x = reorder(cluster, X = coverages$cluster, descending = F
     scale_x_discrete(labels = c("CN 100\nCS100", "CN 100\nCS30", "CN 30\nCN100", "CN 30\nCS30")) +
     ylab("Coverage Rates") +
     ggtitle(label = "Coverage Rates for True Model Specifications") +
-    theme(axis.title.x = element_text("label", vjust = -1), 
+    theme(axis.title.x = element_text("label", vjust = -1),
       axis.text.x = element_text(angle = 0),
-          plot.title = element_text(hjust = .5), 
-          legend.position = c(0.93, 0.2), 
-          legend.background = element_rect(color = "black", 
+      panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          plot.title = element_text(hjust = .5),
+          legend.position = c(0.93, 0.2),
+          legend.background = element_rect(color = "black",
                                            fill = "grey90", size = 1, linetype = "solid"))
   ggsave("c:/users/mgiordan/git/mlmcfasimulation/fullSim/resultsForPub/CoverageRates_skew.jpg", width = 15, height = 7)
 
