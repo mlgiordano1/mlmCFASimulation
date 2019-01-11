@@ -1,4 +1,5 @@
 library("tidyverse")
+library("jtools")
 
 baseDir <- "c:/users/mgiordan/git/mlmcfasimulation/fullSim"
 setwd(baseDir)
@@ -33,6 +34,20 @@ df <- processDf(l_sub)
   coverages <- df %>% group_by(estimators, cluster, w_or_b) %>%
     summarise(Coverage.Mn = mean(covered, na.rm = TRUE))
   
+  
+capwords <- function(s, strict = FALSE) {
+    cap <- function(s) paste(toupper(substring(s, 1, 1)),
+                  {s <- substring(s, 2); if(strict) tolower(s) else s},
+                             sep = "", collapse = " " )
+    sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
+}
+
+  coverages$w_or_b <- capwords(coverages$w_or_b)
+  coverages$w_or_b <- as.factor(coverages$w_or_b)
+  coverages$w_or_b <- relevel(coverages$w_or_b, "Within")
+  levels(coverages$w_or_b)
+  
+  
   # Plot it!
   ggplot(coverages, aes(x = reorder(cluster, X = coverages$cluster, descending = FALSE), 
                         y = Coverage.Mn, 
@@ -45,6 +60,7 @@ df <- processDf(l_sub)
     scale_color_grey(start = 0, end = .7) +
     scale_y_continuous(breaks = seq(.6, 1, .1), limits = c(.6, 1))+
     geom_hline(yintercept = .95, color = "black") +
+    # theme_apa() +
     theme_bw() +
     xlab("Number of Clusters (CN); Size of Clusters (CS)") +
     ylab("Coverage Rates") +
@@ -52,7 +68,8 @@ df <- processDf(l_sub)
     scale_x_discrete(labels = c("CN 100;\nCS 100", "CN 100;\nCS 30", "CN 30;\nCS 100", "CN 30;\nCS 30")) +
     theme(axis.title.x = element_text("label", vjust = -1), 
           plot.title = element_text(hjust = .5), 
-          legend.position = c(0.93, 0.2), 
+          legend.position = c(0.90, 0.2), 
           legend.background = element_rect(color = "black", 
-                                           fill = "grey90", size = 1, linetype = "solid")) +
+                                           fill = "grey90", size = 1, linetype = "solid"), 
+          strip.background = element_blank()) +
   ggsave("c:/users/mgiordan/git/mlmcfasimulation/fullSim/resultsForPub/CoverageRates.jpg")
